@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
+export type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
 
 const VALID_TABS: Tab[] = ['escenarios', 'corte', 'nomina', 'patrimonio', 'balance']
 const DEFAULT_TAB: Tab = 'escenarios'
