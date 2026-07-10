@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Header } from './components/Header'
 import { ConfigPanel } from './components/ConfigPanel'
 import { KpiCards } from './components/KpiCards'
@@ -63,6 +63,32 @@ function App() {
   const banxicoToken = persistenceConfig.banxicoToken ?? ''
   const { data: banxicoData, loading: banxicoLoading, error: banxicoError, refresh: banxicoRefresh } = useBanxicoData(banxicoToken)
 
+  // Fallback de inflación cuando Banxico no está disponible
+  const INFLACION_FALLBACK = 0.04
+
+  // Referencia para saber si la inflación actual vino de Banxico o es el fallback
+  const inflacionDesdeBanxico = useRef(false)
+
+  // Auto-aplicar inflación de Banxico cuando llegan datos frescos
+  useEffect(() => {
+    if (banxicoData?.inpc !== null && banxicoData?.inpc !== undefined) {
+      const nuevaInflacion = banxicoData.inpc / 100
+      inflacionDesdeBanxico.current = true
+      setMacro((prev) => ({ ...prev, inflacionAnual: nuevaInflacion }))
+    }
+  // Solo cuando cambia banxicoData — no incluir macro/setMacro para evitar loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [banxicoData])
+
+  // Si no hay token y la inflación nunca fue seteada por Banxico, asegurar fallback
+  useEffect(() => {
+    if (!banxicoToken && !inflacionDesdeBanxico.current) {
+      setMacro((prev) =>
+        prev.inflacionAnual === INFLACION_FALLBACK ? prev : { ...prev, inflacionAnual: INFLACION_FALLBACK },
+      )
+    }
+  }, [banxicoToken]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
@@ -99,8 +125,9 @@ function App() {
               error={banxicoError}
               onRefresh={banxicoRefresh}
               hasToken={!!banxicoToken}
-              onApplyValues={(inflacion, cetes) => {
-                setMacro({ ...macro, inflacionAnual: inflacion, rendimientoNominal: cetes })
+              onApplyValues={(_, cetes) => {
+                // La inflación se aplica automáticamente; este botón solo aplica CETES
+                setMacro((prev) => ({ ...prev, rendimientoNominal: cetes }))
               }}
             />
             <ConfigPanel
@@ -111,6 +138,7 @@ function App() {
               capitalObjetivo={capitalObjetivo}
               edadActual={edadActual}
               ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
+              inflacionDesdeBanxico={inflacionDesdeBanxico.current}
             />
           </div>
         </aside>

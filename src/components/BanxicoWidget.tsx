@@ -52,16 +52,15 @@ export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, 
 
   const handleApply = () => {
     if (!data) return
-    const inflacion = data.inpc !== null ? data.inpc / 100 : null
     const cetes = data.cetes28 !== null ? data.cetes28 / 100 : null
-    if (inflacion !== null && cetes !== null) {
-      onApplyValues(inflacion, cetes)
+    if (cetes !== null) {
+      onApplyValues(0, cetes)
       setApplied(true)
       setTimeout(() => setApplied(false), 2500)
     }
   }
 
-  const canApply = data?.inpc !== null && data?.cetes28 !== null
+  const canApply = data?.cetes28 !== null
 
   return (
     <section className="rounded-2xl border border-amber-200/80 bg-white shadow-sm dark:border-amber-500/20 dark:bg-slate-900">
@@ -167,7 +166,7 @@ export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, 
                   : 'bg-amber-500 text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-40'
               }`}
             >
-              {applied ? '✓ Aplicado' : 'Usar INPC y CETES como referencia'}
+              {applied ? '✓ Aplicado' : 'Usar CETES como rendimiento de referencia'}
             </button>
           )}
 

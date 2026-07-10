@@ -9,8 +9,9 @@ interface ConfigPanelProps {
   onScenariosChange: (scenarios: Scenario[]) => void
   capitalObjetivo: number
   edadActual: number
-  /** Ingreso neto mensual promedio, derivado del módulo de Nómina */
   ingresoNetoMensual: number
+  /** true si la inflación viene de Banxico (no del fallback) */
+  inflacionDesdeBanxico: boolean
 }
 
 const HOY = new Date().toISOString().slice(0, 10)
@@ -23,6 +24,7 @@ export function ConfigPanel({
   capitalObjetivo,
   edadActual,
   ingresoNetoMensual,
+  inflacionDesdeBanxico,
 }: ConfigPanelProps) {
   const patchMacro = (patch: Partial<MacroConfig>) => onMacroChange({ ...macro, ...patch })
 
@@ -54,13 +56,27 @@ export function ConfigPanel({
             onChange={(v) => patchMacro({ rendimientoNominal: v / 100 })}
             suffix="%"
           />
-          <NumberField
-            label="Inflación anual estimada"
-            value={Math.round(macro.inflacionAnual * 1000) / 10}
-            onChange={(v) => patchMacro({ inflacionAnual: v / 100 })}
-            suffix="%"
-            helper="Promedio Banxico"
-          />
+          {/* Inflación: solo lectura, se obtiene de Banxico automáticamente */}
+          <div>
+            <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+              Inflación anual
+              <span
+                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
+                  inflacionDesdeBanxico
+                    ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                }`}
+              >
+                {inflacionDesdeBanxico ? 'Banxico' : 'Fallback 4%'}
+              </span>
+            </span>
+            <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <span className="flex-1 text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
+                {formatPercent(macro.inflacionAnual)}
+              </span>
+              <span className="text-xs text-slate-400">anual</span>
+            </div>
+          </div>
           <NumberField
             label="Gasto mensual objetivo"
             value={macro.gastoMensualObjetivo}

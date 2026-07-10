@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { BanxicoData } from '../types/banxico'
 import { getBanxicoData } from '../services/banxico'
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000 // 6 horas: datos macroeconómicos no cambian tan seguido
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 días: el INPC se publica mensualmente
 const STORAGE_KEY = 'finanzas-personales:banxico-cache'
 
 interface CacheEntry {
@@ -40,7 +40,8 @@ export interface UseBanxicoDataResult {
 
 /**
  * Hook que obtiene los datos más recientes de Banxico.
- * Cachea el resultado 6 horas en localStorage para no agotar el rate limit.
+ * Cachea el resultado 30 días en localStorage (el INPC se publica mensualmente).
+ * El botón de refresh en el widget limpia la caché manualmente.
  * Solo realiza la petición si el token está configurado.
  */
 export function useBanxicoData(token: string): UseBanxicoDataResult {
