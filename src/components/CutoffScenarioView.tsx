@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
-import type { CutoffResult, CutoffScenario } from '../types/finance'
+import type { CutoffResult, CutoffScenario, Scenario } from '../types/finance'
 import { formatAge, formatCompactCurrency, formatCurrency, formatFullDate, formatPercent, formatRetirementDate, formatYears } from '../lib/formatters'
 import { pickHorizonYears } from '../lib/chartHorizon'
 import { parseDateInput } from '../lib/date'
@@ -25,6 +25,7 @@ interface CutoffScenarioViewProps {
   onCutoffChange: (cutoff: CutoffScenario) => void
   resultadoCorte: CutoffResult
   capitalObjetivo: number
+  scenarios: Scenario[]
 }
 
 const COLOR = '#0d9488'
@@ -57,6 +58,7 @@ export function CutoffScenarioView({
   onCutoffChange,
   resultadoCorte,
   capitalObjetivo,
+  scenarios,
 }: CutoffScenarioViewProps) {
   const { mesesAportando, edadCorte, capitalAlCorte, aniosParaMeta, edadRetiro, fechaRetiro, capitalFinal, mesesParaMeta } =
     resultadoCorte
@@ -79,12 +81,27 @@ export function CutoffScenarioView({
           compuesto.
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <NumberField
-            label="Aportación mensual mientras aportas"
-            value={cutoffScenario.aportacionMensual}
-            onChange={(v) => onCutoffChange({ ...cutoffScenario, aportacionMensual: v })}
-            suffix="MXN/mes"
-          />
+          <div>
+            <NumberField
+              label="Aportación mensual mientras aportas"
+              value={cutoffScenario.aportacionMensual}
+              onChange={(v) => onCutoffChange({ ...cutoffScenario, aportacionMensual: v })}
+              suffix="MXN/mes"
+            />
+            {/* Botones de sincronización rápida con escenarios */}
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {scenarios.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => onCutoffChange({ ...cutoffScenario, aportacionMensual: s.aportacionMensual })}
+                  className="rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-semibold text-slate-600 transition hover:bg-violet-100 hover:text-violet-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-violet-500/20 dark:hover:text-violet-300"
+                >
+                  Usar {s.nombre} ({formatCompactCurrency(s.aportacionMensual)})
+                </button>
+              ))}
+            </div>
+          </div>
           <DateField
             label="Fecha en la que dejas de aportar"
             value={cutoffScenario.fechaCorte}

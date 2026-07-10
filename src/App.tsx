@@ -213,6 +213,7 @@ function App() {
                 onCutoffChange={setCutoffScenario}
                 resultadoCorte={resultadoCorte}
                 capitalObjetivo={capitalObjetivo}
+                scenarios={computedScenarios}
               />
             )}
 
