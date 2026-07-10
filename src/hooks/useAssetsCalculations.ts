@@ -24,6 +24,13 @@ export function useAssetsCalculations(
       prestamos.reduce((sum, r) => sum + r.ingresoMensualNeto, 0) +
       pagares.reduce((sum, r) => sum + r.rendimientoAnualNeto, 0) / 12
 
+    const retornoAnualPropiedades = propiedades.reduce((sum, r) => sum + r.rentaAnualNetaDespuesImpuesto + r.plusvaliaAnualEstimadaMXN, 0)
+    const retornoAnualPrestamos = prestamos.reduce((sum, r) => sum + r.ingresoAnualNeto, 0)
+    const retornoAnualPagares = pagares.reduce((sum, r) => sum + r.rendimientoAnualNeto, 0)
+
+    const retornoAnualTotalActivos = retornoAnualPropiedades + retornoAnualPrestamos + retornoAnualPagares
+    const rendimientoPonderadoAnual = patrimonioTotalActivos > 0 ? retornoAnualTotalActivos / patrimonioTotalActivos : 0
+
     return {
       propiedades,
       prestamos,
@@ -33,6 +40,7 @@ export function useAssetsCalculations(
       montoTotalPagares,
       patrimonioTotalActivos,
       ingresoPasivoMensualNeto,
+      rendimientoPonderadoAnual,
     }
   }, [properties, loans, deposits, tablaResico])
 }

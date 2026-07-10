@@ -57,13 +57,15 @@ function App() {
 
   const assets = useAssetsCalculations(properties, loans, deposits, taxConfig.tablaResico)
 
-  // Derive/override capitalInicial from patrimonioTotalActivos
+  // Derive/override capitalInicial and rendimientoNominal from patrimonioTotalActivos
   const macroConCapitalPatrimonio = useMemo(() => {
+    const hasAssets = assets.patrimonioTotalActivos > 0
     return {
       ...macro,
       capitalInicial: assets.patrimonioTotalActivos,
+      rendimientoNominal: hasAssets ? assets.rendimientoPonderadoAnual : macro.rendimientoNominal,
     }
-  }, [macro, assets.patrimonioTotalActivos])
+  }, [macro, assets.patrimonioTotalActivos, assets.rendimientoPonderadoAnual])
 
   const summary = useFinancialCalculations(macroConCapitalPatrimonio, scenarios, cutoffScenario)
   const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary

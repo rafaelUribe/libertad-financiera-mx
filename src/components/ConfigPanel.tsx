@@ -59,12 +59,29 @@ export function ConfigPanel({
               </span>
             </div>
           </div>
-          <NumberField
-            label="Rendimiento nominal anual"
-            value={Math.round(macro.rendimientoNominal * 1000) / 10}
-            onChange={(v) => patchMacro({ rendimientoNominal: v / 100 })}
-            suffix="%"
-          />
+          {patrimonioTotalActivos > 0 ? (
+            <div>
+              <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+                Rendimiento nominal anual
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  Ponderado de Patrimonio
+                </span>
+              </span>
+              <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800/60">
+                <span className="flex-1 text-sm font-semibold tabular-nums text-slate-900 dark:text-white font-mono">
+                  {formatPercent(macro.rendimientoNominal)}
+                </span>
+                <span className="text-xs text-slate-400">anual</span>
+              </div>
+            </div>
+          ) : (
+            <NumberField
+              label="Rendimiento nominal anual"
+              value={Math.round(macro.rendimientoNominal * 1000) / 10}
+              onChange={(v) => patchMacro({ rendimientoNominal: v / 100 })}
+              suffix="%"
+            />
+          )}
           {/* Inflación: solo lectura, se obtiene de Banxico automáticamente */}
           <div>
             <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
