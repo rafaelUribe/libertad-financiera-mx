@@ -10,7 +10,6 @@ export const DEFAULT_PAYROLL_CONFIG: PayrollConfig = {
   fondoAhorroPorcentajeTrabajador: 0.13,
   fondoAhorroPorcentajeEmpresa: 0.13,
   fondoAhorroRendimientoAnual: 0.08,
-  retencionIsrProvisionalPorcentaje: 0.2,
   gastos: [
     { id: 'vivienda', nombre: 'Renta / hipoteca', montoMensual: 12_000 },
     { id: 'alimentacion', nombre: 'Alimentación', montoMensual: 8_000 },

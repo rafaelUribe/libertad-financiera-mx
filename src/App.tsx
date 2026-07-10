@@ -95,6 +95,7 @@ function App() {
               onScenariosChange={setScenarios}
               capitalObjetivo={capitalObjetivo}
               edadActual={edadActual}
+              ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
             />
           </div>
         </aside>
@@ -126,7 +127,7 @@ function App() {
 
           {tab === 'corte' && (
             <CutoffScenarioView
-              macro={macro}
+              ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
               cutoffScenario={cutoffScenario}
               onCutoffChange={setCutoffScenario}
               resultadoCorte={resultadoCorte}

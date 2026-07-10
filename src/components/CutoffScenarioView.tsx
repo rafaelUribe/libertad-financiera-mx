@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { TooltipContentProps } from 'recharts'
-import type { CutoffResult, CutoffScenario, MacroConfig } from '../types/finance'
+import type { CutoffResult, CutoffScenario } from '../types/finance'
 import { formatAge, formatCompactCurrency, formatCurrency, formatFullDate, formatPercent, formatRetirementDate, formatYears } from '../lib/formatters'
 import { pickHorizonYears } from '../lib/chartHorizon'
 import { parseDateInput } from '../lib/date'
@@ -19,7 +19,8 @@ import { DateField, NumberField } from './fields'
 import { CalendarOff, PiggyBank, Target, TrendingUp } from 'lucide-react'
 
 interface CutoffScenarioViewProps {
-  macro: MacroConfig
+  /** Ingreso neto mensual promedio, derivado del módulo de Nómina */
+  ingresoNetoMensual: number
   cutoffScenario: CutoffScenario
   onCutoffChange: (cutoff: CutoffScenario) => void
   resultadoCorte: CutoffResult
@@ -51,7 +52,7 @@ function CustomTooltip({ active, payload, label }: TooltipContentProps) {
 }
 
 export function CutoffScenarioView({
-  macro,
+  ingresoNetoMensual,
   cutoffScenario,
   onCutoffChange,
   resultadoCorte,
@@ -92,10 +93,10 @@ export function CutoffScenarioView({
             helper={yaDejoDeAportar ? 'Ya no aportas desde hoy' : `en ${formatYears(mesesAportando / 12)}`}
           />
         </div>
-        {macro.ingresoMensual > 0 && (
+        {ingresoNetoMensual > 0 && (
           <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
-            Equivale a {formatPercent(cutoffScenario.aportacionMensual / macro.ingresoMensual)} de tu ingreso mensual
-            mientras aportas.
+            Equivale a {formatPercent(cutoffScenario.aportacionMensual / ingresoNetoMensual)} de tu ingreso neto
+            (según Nómina) mientras aportas.
           </p>
         )}
       </section>

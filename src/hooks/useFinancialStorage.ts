@@ -29,7 +29,8 @@ function withDefaults(fallback: Partial<StorageState> | null): StorageState {
     cutoffScenario: { ...DEFAULT_CUTOFF_SCENARIO, ...fallback?.cutoffScenario },
     payroll: { ...DEFAULT_PAYROLL_CONFIG, ...fallback?.payroll },
     properties: fallback?.properties ?? DEFAULT_PROPERTIES,
-    loans: fallback?.loans ?? DEFAULT_LOANS,
+    // Migración: préstamos guardados antes de existir la retención fintech reciben el 20% típico.
+    loans: (fallback?.loans ?? DEFAULT_LOANS).map((l) => ({ ...l, retencionIsrPorcentaje: l.retencionIsrPorcentaje ?? 0.2 })),
     deposits: fallback?.deposits ?? DEFAULT_DEPOSITS,
     taxConfig: { ...DEFAULT_TAX_CONFIG, ...fallback?.taxConfig },
   }

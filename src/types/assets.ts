@@ -23,18 +23,22 @@ export interface PropertyResult {
   rentabilidadTotalPct: number
 }
 
-/** Dinero prestado a un tercero ("yo te presto") a cambio de un retorno periódico. */
+/** Dinero prestado vía plataformas fintech de préstamos personales (ej. yotepresto) a cambio de un retorno periódico. */
 export interface Loan {
   id: string
   nombre: string
   montoPrestado: number
   tasaRetornoAnual: number
+  /** % de ISR provisional que la plataforma retiene de cada pago de intereses (típicamente 20%) */
+  retencionIsrPorcentaje: number
 }
 
 export interface LoanResult {
   loan: Loan
-  ingresoAnualEstimado: number
-  ingresoMensualEstimado: number
+  ingresoAnualBruto: number
+  isrRetenidoAnual: number
+  ingresoAnualNeto: number
+  ingresoMensualNeto: number
 }
 
 /** Instrumento de inversión a plazo fijo (pagaré / SOFIPO tipo Nu, Klar, etc). */

@@ -13,7 +13,7 @@ interface BalanceGeneralViewProps {
 
 export function BalanceGeneralView({ macro, payrollResult, assets }: BalanceGeneralViewProps) {
   const ingresoPropiedades = assets.propiedades.reduce((sum, r) => sum + r.rentaAnualNetaDespuesImpuesto, 0) / 12
-  const ingresoPrestamos = assets.prestamos.reduce((sum, r) => sum + r.ingresoMensualEstimado, 0)
+  const ingresoPrestamos = assets.prestamos.reduce((sum, r) => sum + r.ingresoMensualNeto, 0)
   const ingresoPagares = assets.pagares.reduce((sum, r) => sum + r.rendimientoAnualNeto, 0) / 12
 
   const balanceGeneralMensual = payrollResult.balanceMensualDisponible + assets.ingresoPasivoMensualNeto

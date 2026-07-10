@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react'
-import { AlertCircle, CheckCircle2, Download, Upload, X } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Download, Trash2, Upload, X } from 'lucide-react'
 import type { StorageState } from '../types/finance'
 import type { TaxConfig } from '../types/tax'
 import { DEFAULT_TAX_CONFIG } from '../constants/tax'
+import { STORAGE_KEYS } from '../constants/finance'
 import { buildConfigBackup, parseConfigBackup, parseTaxConfig } from '../lib/configBackup'
 import { downloadJson } from '../lib/exportData'
 import { formatCurrency } from '../lib/formatters'
@@ -37,9 +38,16 @@ export function ConfigModal({ open, onClose, taxConfig, onTaxConfigChange, fullS
   const [taxText, setTaxText] = useState(() => JSON.stringify(taxConfig, null, 2))
   const [taxMessage, setTaxMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [backupMessage, setBackupMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
+  const [confirmReset, setConfirmReset] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!open) return null
+
+  const resetAllData = () => {
+    window.localStorage.removeItem(STORAGE_KEYS.state)
+    window.localStorage.removeItem(STORAGE_KEYS.persistenceConfig)
+    window.location.reload()
+  }
 
   const applyTaxConfig = () => {
     try {
@@ -190,6 +198,52 @@ export function ConfigModal({ open, onClose, taxConfig, onTaxConfigChange, fullS
               />
 
               {backupMessage && <Message kind={backupMessage.kind} text={backupMessage.text} />}
+
+              <div className="rounded-xl bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+                <strong className="text-slate-600 dark:text-slate-300">Flujo recomendado (sin backend):</strong>{' '}
+                exporta el JSON y guárdalo en tu nube de confianza (Google Drive, iCloud, Dropbox). En cualquier otro
+                navegador o dispositivo, descárgalo de tu nube e impórtalo aquí — desde ese momento persiste solo en
+                el LocalStorage de ese navegador. Repite el export cada vez que hagas cambios importantes.
+              </div>
+
+              <div className="rounded-xl border border-rose-200 p-4 dark:border-rose-500/30">
+                <p className="mb-2 text-xs font-semibold text-rose-600 dark:text-rose-400">Zona de peligro</p>
+                {confirmReset ? (
+                  <div className="space-y-2">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Se borrarán todos tus datos guardados en este navegador (parámetros, escenarios, nómina,
+                      patrimonio y tablas fiscales). Esta acción no se puede deshacer — exporta un respaldo primero si
+                      no lo has hecho.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={resetAllData}
+                        className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-rose-700"
+                      >
+                        <Trash2 size={13} />
+                        Sí, borrar todo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmReset(false)}
+                        className="rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmReset(true)}
+                    className="flex items-center gap-1.5 rounded-lg border border-rose-200 px-3 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-50 dark:border-rose-500/30 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                  >
+                    <Trash2 size={13} />
+                    Borrar todos los datos y empezar de nuevo
+                  </button>
+                )}
+              </div>
             </>
           )}
         </div>

@@ -8,10 +8,10 @@ const EXENCION_PRIMA_VACACIONAL_UMAS = 15
 const EXENCION_PTU_UMAS = 15
 
 /**
- * Calcula el desglose completo de nómina: ISR real (tarifas oficiales) vs. la
- * retención simplificada que aplica la empresa en cada pago, prestaciones
- * (aguinaldo, prima vacacional, PTU) con sus exenciones de UMA, fondo de
- * ahorro proyectado y el balance mensual disponible tras gastos.
+ * Calcula el desglose completo de nómina: ISR retenido por la empresa con la
+ * tarifa mensual oficial (Art. 96 LISR), prestaciones (aguinaldo, prima
+ * vacacional, PTU) con sus exenciones de UMA, fondo de ahorro proyectado y
+ * el balance mensual disponible tras gastos.
  *
  * Simplificaciones asumidas: no se calcula subsidio al empleo; vales de
  * despensa y fondo de ahorro se asumen 100% exentos (dentro de los límites
@@ -23,9 +23,8 @@ export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): Pay
   const sueldoDiario = sueldoBrutoAnual / DIAS_ANIO
 
   const isrMensualCalculado = calcularISRTarifa(config.sueldoBrutoMensual, taxConfig.tablaIsrMensual)
-  const isrMensualRetenido = config.sueldoBrutoMensual * config.retencionIsrProvisionalPorcentaje
-  const diferenciaMensual = isrMensualCalculado - isrMensualRetenido
-  const sueldoNetoMensual = config.sueldoBrutoMensual - isrMensualRetenido
+  const sueldoNetoMensual = config.sueldoBrutoMensual - isrMensualCalculado
+  const tasaEfectivaMensual = config.sueldoBrutoMensual > 0 ? isrMensualCalculado / config.sueldoBrutoMensual : 0
 
   const aguinaldoBruto = sueldoDiario * config.diasAguinaldo
   const aguinaldoExento = Math.min(aguinaldoBruto, EXENCION_AGUINALDO_UMAS * taxConfig.umaDiario)
@@ -46,7 +45,7 @@ export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): Pay
   const ingresoAnualGravable = sueldoBrutoAnual + aguinaldoGravable + primaVacacionalGravable + utilidadesGravables
 
   const isrAnualCalculado = calcularISRTarifa(ingresoAnualGravable, taxConfig.tablaIsrAnual)
-  const isrAnualRetenidoEstimado = isrMensualRetenido * 12
+  const isrAnualRetenidoEstimado = isrMensualCalculado * 12
   const saldoDeclaracionAnual = isrAnualCalculado - isrAnualRetenidoEstimado
 
   const ingresoNetoAnualTotal = ingresoBrutoAnualTotal - isrAnualCalculado
@@ -68,9 +67,8 @@ export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): Pay
   return {
     sueldoDiario,
     isrMensualCalculado,
-    isrMensualRetenido,
-    diferenciaMensual,
     sueldoNetoMensual,
+    tasaEfectivaMensual,
     aguinaldoBruto,
     aguinaldoExento,
     aguinaldoGravable,

@@ -23,7 +23,6 @@ export const DEFAULT_MACRO_CONFIG: MacroConfig = {
   inflacionAnual: 0.04,
   gastoMensualObjetivo: 40_000,
   tasaRetiroSeguro: 0.08,
-  ingresoMensual: 60_000,
 }
 
 export const DEFAULT_CUTOFF_SCENARIO: CutoffScenario = {

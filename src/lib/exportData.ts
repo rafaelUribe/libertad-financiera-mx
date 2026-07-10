@@ -35,7 +35,7 @@ export function buildExportPayload(
       fechaNacimiento: macro.fechaNacimiento,
       edadActualAnios: round(edadActual, 1),
       capitalInicialMXN: macro.capitalInicial,
-      ingresoMensualNetoMXN: macro.ingresoMensual,
+      ingresoNetoMensualPromedioMXN: Math.round(payrollResult.ingresoNetoMensualPromedio),
       rendimientoNominalAnual: macro.rendimientoNominal,
       inflacionAnualEstimada: macro.inflacionAnual,
       tasaRealAnual: round(tasaRealAnual, 4),
@@ -46,8 +46,10 @@ export function buildExportPayload(
     escenariosDeAhorroConstante: resultados.map((r) => ({
       nombre: r.scenario.nombre,
       aportacionMensualMXN: r.scenario.aportacionMensual,
-      porcentajeDelIngresoMensual:
-        macro.ingresoMensual > 0 ? round(r.scenario.aportacionMensual / macro.ingresoMensual, 4) : null,
+      porcentajeDelIngresoNetoMensual:
+        payrollResult.ingresoNetoMensualPromedio > 0
+          ? round(r.scenario.aportacionMensual / payrollResult.ingresoNetoMensualPromedio, 4)
+          : null,
       alcanzaLaMetaEnHorizonte: r.mesesParaMeta !== null,
       tiempoParaMetaAnios: r.aniosParaMeta !== null ? round(r.aniosParaMeta, 1) : null,
       edadDeRetiro: r.edadRetiro !== null ? round(r.edadRetiro, 1) : null,
@@ -57,8 +59,10 @@ export function buildExportPayload(
     escenarioDeCorteDeAportaciones: {
       descripcion: 'Aporta la cantidad fija indicada solo hasta la fecha de corte; después el capital crece únicamente por interés compuesto (aportación = 0).',
       aportacionMensualMXN: cutoffScenario.aportacionMensual,
-      porcentajeDelIngresoMensualMientrasAporta:
-        macro.ingresoMensual > 0 ? round(cutoffScenario.aportacionMensual / macro.ingresoMensual, 4) : null,
+      porcentajeDelIngresoNetoMensualMientrasAporta:
+        payrollResult.ingresoNetoMensualPromedio > 0
+          ? round(cutoffScenario.aportacionMensual / payrollResult.ingresoNetoMensualPromedio, 4)
+          : null,
       fechaEnQueDejaDeAportar: cutoffScenario.fechaCorte,
       edadDeCorte: round(resultadoCorte.edadCorte, 1),
       capitalAlMomentoDelCorteMXN: Math.round(resultadoCorte.capitalAlCorte),
@@ -71,9 +75,9 @@ export function buildExportPayload(
     nomina: {
       notaTablasFiscales: `Cálculo con tarifas ISR oficiales SAT ${taxConfig.year}; no incluye subsidio al empleo. Aproximación educativa, no asesoría fiscal.`,
       sueldoBrutoMensualMXN: payrollResult.sueldoDiario * 365 / 12,
-      isrMensualCalculadoMXN: Math.round(payrollResult.isrMensualCalculado),
-      isrMensualRetenidoMXN: Math.round(payrollResult.isrMensualRetenido),
+      isrMensualRetenidoTarifaMXN: Math.round(payrollResult.isrMensualCalculado),
       sueldoNetoMensualMXN: Math.round(payrollResult.sueldoNetoMensual),
+      tasaEfectivaIsrMensual: round(payrollResult.tasaEfectivaMensual, 4),
       aguinaldoBrutoMXN: Math.round(payrollResult.aguinaldoBruto),
       primaVacacionalBrutaMXN: Math.round(payrollResult.primaVacacionalBruta),
       isrAnualCalculadoMXN: Math.round(payrollResult.isrAnualCalculado),
@@ -110,7 +114,10 @@ export function buildExportPayload(
         nombre: r.loan.nombre,
         montoPrestadoMXN: r.loan.montoPrestado,
         tasaRetornoAnual: r.loan.tasaRetornoAnual,
-        ingresoAnualEstimadoMXN: Math.round(r.ingresoAnualEstimado),
+        retencionIsrProvisional: r.loan.retencionIsrPorcentaje,
+        ingresoAnualBrutoMXN: Math.round(r.ingresoAnualBruto),
+        isrRetenidoAnualMXN: Math.round(r.isrRetenidoAnual),
+        ingresoAnualNetoMXN: Math.round(r.ingresoAnualNeto),
       })),
       pagares: assets.pagares.map((r) => ({
         nombre: r.deposit.nombre,

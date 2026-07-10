@@ -14,9 +14,10 @@ export const DEFAULT_PROPERTIES: Property[] = [
 export const DEFAULT_LOANS: Loan[] = [
   {
     id: 'prestamo-1',
-    nombre: 'Préstamo a familiar',
+    nombre: 'Cuenta yotepresto',
     montoPrestado: 100_000,
     tasaRetornoAnual: 0.12,
+    retencionIsrPorcentaje: 0.2,
   },
 ]
 

@@ -80,13 +80,6 @@ export function NominaView({ payroll, onPayrollChange, result, taxYear }: Nomina
             suffix="MXN"
           />
           <NumberField
-            label="% retención ISR provisional"
-            value={Math.round(payroll.retencionIsrProvisionalPorcentaje * 1000) / 10}
-            onChange={(v) => patch({ retencionIsrProvisionalPorcentaje: v / 100 })}
-            suffix="%"
-            helper="Lo que retiene la empresa en cada pago"
-          />
-          <NumberField
             label="Días de aguinaldo"
             value={payroll.diasAguinaldo}
             onChange={(v) => patch({ diasAguinaldo: v })}
@@ -144,17 +137,13 @@ export function NominaView({ payroll, onPayrollChange, result, taxYear }: Nomina
               icon={Banknote}
               label="Sueldo neto mensual"
               value={formatCurrency(result.sueldoNetoMensual)}
-              sublabel={`ISR retenido: ${formatCurrency(result.isrMensualRetenido)}`}
+              sublabel={`ISR retenido: ${formatCurrency(result.isrMensualCalculado)}`}
             />
             <KpiTile
               icon={Scale}
-              label="ISR mensual real (tarifa)"
+              label="ISR mensual (tarifa oficial)"
               value={formatCurrency(result.isrMensualCalculado)}
-              sublabel={
-                result.diferenciaMensual >= 0
-                  ? `Retienen ${formatCurrency(Math.abs(result.diferenciaMensual))} de menos`
-                  : `Retienen ${formatCurrency(Math.abs(result.diferenciaMensual))} de más`
-              }
+              sublabel={`Tasa efectiva: ${formatPercent(result.tasaEfectivaMensual)}`}
               color="#0ea5e9"
             />
             <KpiTile

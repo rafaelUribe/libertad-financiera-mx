@@ -32,9 +32,12 @@ export function calcularRentabilidadPropiedad(property: Property, tablaResico: R
   }
 }
 
+/** Préstamos fintech (ej. yotepresto): la plataforma retiene un % de ISR provisional (típicamente 20%) sobre los intereses cobrados. */
 export function calcularRendimientoPrestamo(loan: Loan): LoanResult {
-  const ingresoAnualEstimado = loan.montoPrestado * loan.tasaRetornoAnual
-  return { loan, ingresoAnualEstimado, ingresoMensualEstimado: ingresoAnualEstimado / 12 }
+  const ingresoAnualBruto = loan.montoPrestado * loan.tasaRetornoAnual
+  const isrRetenidoAnual = ingresoAnualBruto * loan.retencionIsrPorcentaje
+  const ingresoAnualNeto = ingresoAnualBruto - isrRetenidoAnual
+  return { loan, ingresoAnualBruto, isrRetenidoAnual, ingresoAnualNeto, ingresoMensualNeto: ingresoAnualNeto / 12 }
 }
 
 export function calcularRendimientoPagare(deposit: FixedTermDeposit): FixedTermDepositResult {

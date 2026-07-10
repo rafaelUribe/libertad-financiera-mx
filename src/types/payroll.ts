@@ -15,18 +15,17 @@ export interface PayrollConfig {
   fondoAhorroPorcentajeTrabajador: number
   fondoAhorroPorcentajeEmpresa: number
   fondoAhorroRendimientoAnual: number
-  /** % que retiene la empresa de cada pago como ISR provisional (simplificación real de nómina, no la tarifa oficial) */
-  retencionIsrProvisionalPorcentaje: number
   gastos: ExpenseCategory[]
 }
 
 export interface PayrollResult {
   sueldoDiario: number
 
+  /** ISR mensual retenido por la empresa conforme a la tarifa oficial (Art. 96 LISR) */
   isrMensualCalculado: number
-  isrMensualRetenido: number
-  diferenciaMensual: number
   sueldoNetoMensual: number
+  /** Tasa efectiva de ISR sobre el sueldo bruto mensual */
+  tasaEfectivaMensual: number
 
   aguinaldoBruto: number
   aguinaldoExento: number
@@ -44,6 +43,7 @@ export interface PayrollResult {
   ingresoBrutoAnualTotal: number
   ingresoAnualGravable: number
   isrAnualCalculado: number
+  /** Retención anual estimada = retención mensual (tarifa) × 12 */
   isrAnualRetenidoEstimado: number
   /** positivo = saldo a cargo (falta pagar en la declaración anual), negativo = saldo a favor */
   saldoDeclaracionAnual: number

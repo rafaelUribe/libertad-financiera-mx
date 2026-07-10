@@ -15,8 +15,6 @@ export interface MacroConfig {
   gastoMensualObjetivo: number
   /** Tasa de retiro seguro anual (Safe Withdrawal Rate), ej. 0.08 = 8% */
   tasaRetiroSeguro: number
-  /** Ingreso mensual neto actual, en MXN (para calcular la tasa de ahorro de cada escenario) */
-  ingresoMensual: number
 }
 
 export interface Scenario {

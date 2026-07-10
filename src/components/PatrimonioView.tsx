@@ -65,7 +65,10 @@ export function PatrimonioView({
     onLoansChange(loans.map((l) => (l.id === id ? { ...l, ...patch } : l)))
   const removeLoan = (id: string) => onLoansChange(loans.filter((l) => l.id !== id))
   const addLoan = () =>
-    onLoansChange([...loans, { id: `prestamo-${Date.now()}`, nombre: 'Nuevo préstamo', montoPrestado: 0, tasaRetornoAnual: 0.1 }])
+    onLoansChange([
+      ...loans,
+      { id: `prestamo-${Date.now()}`, nombre: 'Nuevo préstamo', montoPrestado: 0, tasaRetornoAnual: 0.1, retencionIsrPorcentaje: 0.2 },
+    ])
 
   const patchDeposit = (id: string, patch: Partial<FixedTermDeposit>) =>
     onDepositsChange(deposits.map((d) => (d.id === id ? { ...d, ...patch } : d)))
@@ -150,10 +153,10 @@ export function PatrimonioView({
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
           <HandCoins size={16} className="text-emerald-500" />
-          Préstamos ("yo te presto")
+          Préstamos personales (fintech, ej. yotepresto)
         </h2>
         <div className="space-y-5">
-          {assets.prestamos.map(({ loan, ingresoAnualEstimado, ingresoMensualEstimado }) => (
+          {assets.prestamos.map(({ loan, ingresoAnualBruto, isrRetenidoAnual, ingresoAnualNeto, ingresoMensualNeto }) => (
             <div key={loan.id} className="rounded-xl border border-slate-100 p-4 dark:border-slate-800">
               <ItemHeader
                 title={
@@ -163,7 +166,7 @@ export function PatrimonioView({
                 }
                 onRemove={() => removeLoan(loan.id)}
               />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <NumberField
                   label="Monto prestado"
                   value={loan.montoPrestado}
@@ -176,10 +179,20 @@ export function PatrimonioView({
                   onChange={(v) => patchLoan(loan.id, { tasaRetornoAnual: v / 100 })}
                   suffix="%"
                 />
+                <NumberField
+                  label="Retención ISR provisional"
+                  value={Math.round(loan.retencionIsrPorcentaje * 1000) / 10}
+                  onChange={(v) => patchLoan(loan.id, { retencionIsrPorcentaje: v / 100 })}
+                  suffix="%"
+                  helper="La plataforma la retiene de cada pago"
+                />
               </div>
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-100 pt-3 text-[11px] text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                <span>Ingreso: {formatCurrency(ingresoMensualEstimado)}/mes</span>
-                <span className="font-medium text-slate-700 dark:text-slate-200">{formatCurrency(ingresoAnualEstimado)}/año</span>
+                <span>Bruto: {formatCurrency(ingresoAnualBruto)}/año</span>
+                <span>ISR retenido: {formatCurrency(isrRetenidoAnual)}/año</span>
+                <span className="font-medium text-slate-700 dark:text-slate-200">
+                  Neto: {formatCurrency(ingresoMensualNeto)}/mes · {formatCurrency(ingresoAnualNeto)}/año
+                </span>
               </div>
             </div>
           ))}

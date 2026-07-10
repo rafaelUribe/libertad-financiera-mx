@@ -9,6 +9,8 @@ interface ConfigPanelProps {
   onScenariosChange: (scenarios: Scenario[]) => void
   capitalObjetivo: number
   edadActual: number
+  /** Ingreso neto mensual promedio, derivado del módulo de Nómina */
+  ingresoNetoMensual: number
 }
 
 const HOY = new Date().toISOString().slice(0, 10)
@@ -20,6 +22,7 @@ export function ConfigPanel({
   onScenariosChange,
   capitalObjetivo,
   edadActual,
+  ingresoNetoMensual,
 }: ConfigPanelProps) {
   const patchMacro = (patch: Partial<MacroConfig>) => onMacroChange({ ...macro, ...patch })
 
@@ -44,13 +47,6 @@ export function ConfigPanel({
             value={macro.capitalInicial}
             onChange={(v) => patchMacro({ capitalInicial: v })}
             suffix="MXN"
-          />
-          <NumberField
-            label="Ingreso mensual"
-            value={macro.ingresoMensual}
-            onChange={(v) => patchMacro({ ingresoMensual: v })}
-            suffix="MXN"
-            helper="Neto, para calcular tu tasa de ahorro"
           />
           <NumberField
             label="Rendimiento nominal anual"
@@ -104,9 +100,9 @@ export function ConfigPanel({
                 onChange={(v) => patchScenario(scenario.id, v)}
                 suffix="MXN/mes"
               />
-              {macro.ingresoMensual > 0 && (
+              {ingresoNetoMensual > 0 && (
                 <p className="mt-1 pl-1 text-[10px] text-slate-400 dark:text-slate-500">
-                  {formatPercent(scenario.aportacionMensual / macro.ingresoMensual)} de tu ingreso mensual
+                  {formatPercent(scenario.aportacionMensual / ingresoNetoMensual)} de tu ingreso neto (según Nómina)
                 </p>
               )}
             </div>

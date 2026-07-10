@@ -21,7 +21,7 @@ export function useAssetsCalculations(
 
     const ingresoPasivoMensualNeto =
       propiedades.reduce((sum, r) => sum + r.rentaAnualNetaDespuesImpuesto, 0) / 12 +
-      prestamos.reduce((sum, r) => sum + r.ingresoMensualEstimado, 0) +
+      prestamos.reduce((sum, r) => sum + r.ingresoMensualNeto, 0) +
       pagares.reduce((sum, r) => sum + r.rendimientoAnualNeto, 0) / 12
 
     return {
