@@ -116,4 +116,6 @@ export interface PersistenceConfig {
   provider: PersistenceProvider
   firebase?: FirebaseCredentials
   sheets?: GoogleSheetsCredentials
+  /** Token de autenticación del SIE API de Banxico */
+  banxicoToken?: string
 }

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import { AlertCircle, CheckCircle2, Download, Trash2, Upload, X } from 'lucide-react'
-import type { StorageState } from '../types/finance'
+import { AlertCircle, CheckCircle2, Download, Eye, EyeOff, Trash2, Upload, X, Zap } from 'lucide-react'
+import type { PersistenceConfig, StorageState } from '../types/finance'
 import type { TaxConfig } from '../types/tax'
 import { DEFAULT_TAX_CONFIG } from '../constants/tax'
 import { STORAGE_KEYS } from '../constants/finance'
@@ -15,9 +15,11 @@ interface ConfigModalProps {
   onTaxConfigChange: (taxConfig: TaxConfig) => void
   fullState: StorageState
   onRestoreState: (state: StorageState) => void
+  persistenceConfig: PersistenceConfig
+  onPersistenceConfigChange: (config: PersistenceConfig) => void
 }
 
-type Tab = 'fiscal' | 'respaldo'
+type Tab = 'fiscal' | 'respaldo' | 'banxico'
 
 function Message({ kind, text }: { kind: 'error' | 'success'; text: string }) {
   const Icon = kind === 'error' ? AlertCircle : CheckCircle2
@@ -33,13 +35,25 @@ function Message({ kind, text }: { kind: 'error' | 'success'; text: string }) {
   )
 }
 
-export function ConfigModal({ open, onClose, taxConfig, onTaxConfigChange, fullState, onRestoreState }: ConfigModalProps) {
+export function ConfigModal({
+  open,
+  onClose,
+  taxConfig,
+  onTaxConfigChange,
+  fullState,
+  onRestoreState,
+  persistenceConfig,
+  onPersistenceConfigChange,
+}: ConfigModalProps) {
   const [tab, setTab] = useState<Tab>('fiscal')
   const [taxText, setTaxText] = useState(() => JSON.stringify(taxConfig, null, 2))
   const [taxMessage, setTaxMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [backupMessage, setBackupMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [confirmReset, setConfirmReset] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [banxicoToken, setBanxicoToken] = useState(persistenceConfig.banxicoToken ?? '')
+  const [showToken, setShowToken] = useState(false)
+  const [banxicoMessage, setBanxicoMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
 
   if (!open) return null
 
@@ -113,6 +127,17 @@ export function ConfigModal({ open, onClose, taxConfig, onTaxConfigChange, fullS
             </button>
             <button
               type="button"
+              onClick={() => setTab('banxico')}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                tab === 'banxico'
+                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+              }`}
+            >
+              Banxico API
+            </button>
+            <button
+              type="button"
               onClick={() => setTab('respaldo')}
               className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition ${
                 tab === 'respaldo'
@@ -120,12 +145,95 @@ export function ConfigModal({ open, onClose, taxConfig, onTaxConfigChange, fullS
                   : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >
-              Respaldo completo
+              Respaldo
             </button>
           </div>
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
+          {tab === 'banxico' && (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-500/20">
+                  <Zap size={14} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-white">Banxico SIE API</p>
+              </div>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                Ingresa tu token del{' '}
+                <a
+                  href="https://www.banxico.org.mx/SieAPIRest/service/v1/token"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-amber-600 underline hover:text-amber-700 dark:text-amber-400"
+                >
+                  SIE API de Banxico
+                </a>{' '}
+                para obtener datos en tiempo real de INPC, CETES, TIIE y tipo de cambio FIX. El token se guarda en este
+                navegador y nunca sale de tu dispositivo.
+              </p>
+
+              <div className="space-y-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">Token Bmx-Token</span>
+                  <div className="relative">
+                    <input
+                      id="banxico-token-input"
+                      type={showToken ? 'text' : 'password'}
+                      value={banxicoToken}
+                      onChange={(e) => setBanxicoToken(e.target.value)}
+                      placeholder="Ej: 11b631ac63e4c7eb89b31…"
+                      className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-10 font-mono text-xs text-slate-900 shadow-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowToken((v) => !v)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                    >
+                      {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </label>
+              </div>
+
+              {banxicoMessage && <Message kind={banxicoMessage.kind} text={banxicoMessage.text} />}
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBanxicoToken('')
+                    onPersistenceConfigChange({ ...persistenceConfig, banxicoToken: undefined })
+                    setBanxicoMessage({ kind: 'success', text: 'Token eliminado.' })
+                  }}
+                  className="rounded-lg px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                >
+                  Limpiar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const trimmed = banxicoToken.trim()
+                    if (!trimmed) {
+                      setBanxicoMessage({ kind: 'error', text: 'El token no puede estar vacío.' })
+                      return
+                    }
+                    onPersistenceConfigChange({ ...persistenceConfig, banxicoToken: trimmed })
+                    setBanxicoMessage({ kind: 'success', text: 'Token guardado correctamente.' })
+                  }}
+                  className="rounded-lg bg-amber-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600"
+                >
+                  Guardar token
+                </button>
+              </div>
+
+              <div className="rounded-xl bg-amber-50 p-3 text-[11px] leading-relaxed text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                <strong>Series consultadas:</strong> INPC General (SP74665), CETES 28d (SF60634), TIIE 28d (SF43718), FIX USD/MXN
+                (SF61745). Límite: 80 req/min · 40 000 req/día. Los datos se cachean 6 horas.
+              </div>
+            </>
+          )}
+
           {tab === 'fiscal' && (
             <>
               <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">

@@ -9,11 +9,13 @@ import { PatrimonioView } from './components/PatrimonioView'
 import { BalanceGeneralView } from './components/BalanceGeneralView'
 import { SyncModal } from './components/SyncModal'
 import { ConfigModal } from './components/ConfigModal'
+import { BanxicoWidget } from './components/BanxicoWidget'
 import { useFinancialCalculations } from './hooks/useFinancialCalculations'
 import { useFinancialStorage } from './hooks/useFinancialStorage'
 import { usePayrollCalculations } from './hooks/usePayrollCalculations'
 import { useAssetsCalculations } from './hooks/useAssetsCalculations'
 import { useDarkMode } from './hooks/useDarkMode'
+import { useBanxicoData } from './hooks/useBanxicoData'
 import { buildExportPayload } from './lib/exportData'
 import type { StorageState } from './types/finance'
 
@@ -58,6 +60,9 @@ function App() {
   const payrollResult = usePayrollCalculations(payroll, taxConfig, macro.inflacionAnual)
   const assets = useAssetsCalculations(properties, loans, deposits, taxConfig.tablaResico)
 
+  const banxicoToken = persistenceConfig.banxicoToken ?? ''
+  const { data: banxicoData, loading: banxicoLoading, error: banxicoError, refresh: banxicoRefresh } = useBanxicoData(banxicoToken)
+
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
@@ -87,7 +92,17 @@ function App() {
 
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8 lg:py-8">
         <aside className={`${configOpen ? 'block' : 'hidden'} lg:block`}>
-          <div className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-24 space-y-4">
+            <BanxicoWidget
+              data={banxicoData}
+              loading={banxicoLoading}
+              error={banxicoError}
+              onRefresh={banxicoRefresh}
+              hasToken={!!banxicoToken}
+              onApplyValues={(inflacion, cetes) => {
+                setMacro({ ...macro, inflacionAnual: inflacion, rendimientoNominal: cetes })
+              }}
+            />
             <ConfigPanel
               macro={macro}
               onMacroChange={setMacro}
@@ -177,6 +192,8 @@ function App() {
         onTaxConfigChange={setTaxConfig}
         fullState={fullState}
         onRestoreState={restoreState}
+        persistenceConfig={persistenceConfig}
+        onPersistenceConfigChange={updatePersistenceConfig}
       />
     </div>
   )
