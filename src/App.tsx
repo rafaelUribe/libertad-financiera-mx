@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { ConfigPanel } from './components/ConfigPanel'
 import { KpiCards } from './components/KpiCards'
 import { ProjectionChart } from './components/ProjectionChart'
+import { ProjectionChart25Years } from './components/ProjectionChart25Years'
 import { CutoffScenarioView } from './components/CutoffScenarioView'
 import { NominaView } from './components/NominaView'
 import { PatrimonioView } from './components/PatrimonioView'
@@ -67,9 +68,34 @@ function App() {
     }
   }, [macro, assets.patrimonioTotalActivos, assets.rendimientoPonderadoAnual])
 
-  const summary = useFinancialCalculations(macroConCapitalPatrimonio, scenarios, cutoffScenario)
-  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
   const payrollResult = usePayrollCalculations(payroll, taxConfig, macroConCapitalPatrimonio.inflacionAnual)
+
+  const customScenarioFromState = useMemo(() => {
+    const found = scenarios.find((s) => s.id === 'personalizado')
+    if (found) return found
+    const oldEquilibrado = scenarios.find((s) => s.id === 'equilibrado')
+    return {
+      id: 'personalizado',
+      nombre: 'Ahorro personalizado',
+      aportacionMensual: oldEquilibrado ? oldEquilibrado.aportacionMensual : 10000,
+      color: '#10b981',
+    }
+  }, [scenarios])
+
+  const computedScenarios = useMemo(() => {
+    return [
+      {
+        id: 'balance',
+        nombre: 'Ahorro Real (Balance)',
+        aportacionMensual: Math.max(0, payrollResult.balanceMensualDisponible),
+        color: '#8b5cf6',
+      },
+      customScenarioFromState,
+    ]
+  }, [payrollResult.balanceMensualDisponible, customScenarioFromState])
+
+  const summary = useFinancialCalculations(macroConCapitalPatrimonio, computedScenarios, cutoffScenario)
+  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
 
   const banxicoToken = persistenceConfig.banxicoToken ?? ''
   const { data: banxicoData, loading: banxicoLoading, error: banxicoError, refresh: banxicoRefresh } = useBanxicoData(banxicoToken)
@@ -127,89 +153,100 @@ function App() {
         exportData={exportPayload}
       />
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8 lg:py-8">
-        <aside className={`${configOpen ? 'block' : 'hidden'} lg:block`}>
-          <div className="lg:sticky lg:top-24 space-y-4">
-            <BanxicoWidget
-              data={banxicoData}
-              loading={banxicoLoading}
-              error={banxicoError}
-              onRefresh={banxicoRefresh}
-              hasToken={!!banxicoToken}
-            />
-            <ConfigPanel
-              macro={macroConCapitalPatrimonio}
-              onMacroChange={setMacro}
-              scenarios={scenarios}
-              onScenariosChange={setScenarios}
-              capitalObjetivo={capitalObjetivo}
-              edadActual={edadActual}
-              ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
-              inflacionDesdeBanxico={inflacionDesdeBanxico.current}
-              patrimonioTotalActivos={assets.patrimonioTotalActivos}
-            />
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8 space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
+          <aside className={`${configOpen ? 'block' : 'hidden'} lg:block`}>
+            <div className="lg:sticky lg:top-24 space-y-4">
+              <BanxicoWidget
+                data={banxicoData}
+                loading={banxicoLoading}
+                error={banxicoError}
+                onRefresh={banxicoRefresh}
+                hasToken={!!banxicoToken}
+              />
+              <ConfigPanel
+                macro={macroConCapitalPatrimonio}
+                onMacroChange={setMacro}
+                scenarios={computedScenarios}
+                onScenariosChange={(updatedScenarios) => {
+                  const customOnly = updatedScenarios.filter((s) => s.id === 'personalizado')
+                  setScenarios(customOnly)
+                }}
+                capitalObjetivo={capitalObjetivo}
+                edadActual={edadActual}
+                ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
+                inflacionDesdeBanxico={inflacionDesdeBanxico.current}
+                patrimonioTotalActivos={assets.patrimonioTotalActivos}
+              />
+            </div>
+          </aside>
+
+          <div className="min-w-0 space-y-6">
+            <div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800 sm:w-fit">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  className={`shrink-0 rounded-md px-4 py-1.5 text-xs font-medium transition ${
+                    tab === t.id
+                      ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {tab === 'escenarios' && (
+              <>
+                <KpiCards resultados={resultados} />
+                <ProjectionChart resultados={resultados} capitalObjetivo={capitalObjetivo} />
+              </>
+            )}
+
+            {tab === 'corte' && (
+              <CutoffScenarioView
+                ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
+                cutoffScenario={cutoffScenario}
+                onCutoffChange={setCutoffScenario}
+                resultadoCorte={resultadoCorte}
+                capitalObjetivo={capitalObjetivo}
+              />
+            )}
+
+            {tab === 'nomina' && (
+              <NominaView
+                payroll={payroll}
+                onPayrollChange={setPayroll}
+                result={payrollResult}
+                taxYear={taxConfig.year}
+                inflacionAnual={macroConCapitalPatrimonio.inflacionAnual}
+              />
+            )}
+
+            {tab === 'patrimonio' && (
+              <PatrimonioView
+                properties={properties}
+                onPropertiesChange={setProperties}
+                loans={loans}
+                onLoansChange={setLoans}
+                deposits={deposits}
+                onDepositsChange={setDeposits}
+                assets={assets}
+              />
+            )}
+
+            {tab === 'balance' && <BalanceGeneralView payrollResult={payrollResult} assets={assets} />}
           </div>
-        </aside>
-
-        <div className="min-w-0 space-y-6">
-          <div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800 sm:w-fit">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className={`shrink-0 rounded-md px-4 py-1.5 text-xs font-medium transition ${
-                  tab === t.id
-                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {tab === 'escenarios' && (
-            <>
-              <KpiCards resultados={resultados} />
-              <ProjectionChart resultados={resultados} capitalObjetivo={capitalObjetivo} />
-            </>
-          )}
-
-          {tab === 'corte' && (
-            <CutoffScenarioView
-              ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
-              cutoffScenario={cutoffScenario}
-              onCutoffChange={setCutoffScenario}
-              resultadoCorte={resultadoCorte}
-              capitalObjetivo={capitalObjetivo}
-            />
-          )}
-
-          {tab === 'nomina' && (
-            <NominaView
-              payroll={payroll}
-              onPayrollChange={setPayroll}
-              result={payrollResult}
-              taxYear={taxConfig.year}
-              inflacionAnual={macroConCapitalPatrimonio.inflacionAnual}
-            />
-          )}
-
-          {tab === 'patrimonio' && (
-            <PatrimonioView
-              properties={properties}
-              onPropertiesChange={setProperties}
-              loans={loans}
-              onLoansChange={setLoans}
-              deposits={deposits}
-              onDepositsChange={setDeposits}
-              assets={assets}
-            />
-          )}
-
-          {tab === 'balance' && <BalanceGeneralView payrollResult={payrollResult} assets={assets} />}
         </div>
+
+        {tab === 'escenarios' && (
+          <div className="w-full pt-4">
+            <ProjectionChart25Years resultados={resultados} capitalObjetivo={capitalObjetivo} />
+          </div>
+        )}
       </main>
 
       <SyncModal
