@@ -61,11 +61,15 @@ export async function getBanxicoData(token: string): Promise<BanxicoData> {
   const fechaActualizacion =
     fechaSerie?.datos?.[fechaSerie.datos.length - 1]?.fecha ?? null
 
+  // SP74665 → Inflación no subyacente anual
+  // SF43718 → FIX USD/MXN
+  // SF60634 → CETES 91 días (tasa de rendimiento)
+  // SF61745 → Tasa objetivo Banxico
   return {
     inpc: parseDato(getLatestDato('SP74665') ?? undefined),
     cetes28: parseDato(getLatestDato('SF60634') ?? undefined),
-    tiie28: parseDato(getLatestDato('SF43718') ?? undefined),
-    fix: parseDato(getLatestDato('SF61745') ?? undefined),
+    tiie28: parseDato(getLatestDato('SF61745') ?? undefined),
+    fix: parseDato(getLatestDato('SF43718') ?? undefined),
     fechaActualizacion,
   }
 }

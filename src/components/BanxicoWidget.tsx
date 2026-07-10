@@ -126,21 +126,21 @@ export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, 
           {!error && (
             <div className="grid grid-cols-2 gap-2">
               <StatCard
-                label="INPC"
+                label="Infl. no subyac."
                 value={data?.inpc ?? null}
-                suffix="%"
+                suffix="% anual"
                 icon={TrendingUp}
                 color="text-amber-600 dark:text-amber-400"
               />
               <StatCard
-                label="CETES 28d"
+                label="CETES 91d"
                 value={data?.cetes28 ?? null}
                 suffix="%"
                 icon={TrendingUp}
                 color="text-emerald-600 dark:text-emerald-400"
               />
               <StatCard
-                label="TIIE 28d"
+                label="Tasa objetivo"
                 value={data?.tiie28 ?? null}
                 suffix="%"
                 icon={TrendingUp}
