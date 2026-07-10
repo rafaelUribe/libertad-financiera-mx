@@ -16,10 +16,10 @@ import { usePayrollCalculations } from './hooks/usePayrollCalculations'
 import { useAssetsCalculations } from './hooks/useAssetsCalculations'
 import { useDarkMode } from './hooks/useDarkMode'
 import { useBanxicoData } from './hooks/useBanxicoData'
+import { useHashTab } from './hooks/useHashTab'
+import type { Tab } from './hooks/useHashTab'
 import { buildExportPayload } from './lib/exportData'
 import type { StorageState } from './types/finance'
-
-type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'escenarios', label: 'Escenarios de ahorro' },
@@ -66,7 +66,7 @@ function App() {
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
-  const [tab, setTab] = useState<Tab>('escenarios')
+  const [tab, setTab] = useHashTab()
 
   const exportPayload = useMemo(
     () => buildExportPayload(macro, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig),
