@@ -136,10 +136,6 @@ function App() {
               error={banxicoError}
               onRefresh={banxicoRefresh}
               hasToken={!!banxicoToken}
-              onApplyValues={(_, cetes) => {
-                // La inflación se aplica automáticamente; este botón solo aplica CETES
-                setMacro((prev) => ({ ...prev, rendimientoNominal: cetes }))
-              }}
             />
             <ConfigPanel
               macro={macroConCapitalPatrimonio}

@@ -7,9 +7,6 @@ interface BanxicoWidgetProps {
   loading: boolean
   error: string | null
   onRefresh: () => void
-  /** Aplica los valores de Banxico al MacroConfig */
-  onApplyValues: (inflacion: number, cetes: number) => void
-  /** Token configurado — si no hay token no mostramos el widget */
   hasToken: boolean
 }
 
@@ -44,23 +41,10 @@ function StatCard({
   )
 }
 
-export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, hasToken }: BanxicoWidgetProps) {
+export function BanxicoWidget({ data, loading, error, onRefresh, hasToken }: BanxicoWidgetProps) {
   const [expanded, setExpanded] = useState(true)
-  const [applied, setApplied] = useState(false)
 
   if (!hasToken) return null
-
-  const handleApply = () => {
-    if (!data) return
-    const cetes = data.cetes28 !== null ? data.cetes28 / 100 : null
-    if (cetes !== null) {
-      onApplyValues(0, cetes)
-      setApplied(true)
-      setTimeout(() => setApplied(false), 2500)
-    }
-  }
-
-  const canApply = data?.cetes28 !== null
 
   return (
     <section className="rounded-2xl border border-amber-200/80 bg-white shadow-sm dark:border-amber-500/20 dark:bg-slate-900">
@@ -154,26 +138,10 @@ export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, 
               />
             </div>
           )}
-
-          {!error && (
-            <button
-              type="button"
-              onClick={handleApply}
-              disabled={!canApply || loading}
-              className={`w-full rounded-lg px-3 py-2 text-xs font-semibold shadow-sm transition ${
-                applied
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-amber-500 text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-40'
-              }`}
-            >
-              {applied ? '✓ Aplicado' : 'Usar CETES como rendimiento de referencia'}
-            </button>
-          )}
-
           <p className="text-center text-[10px] leading-snug text-slate-400 dark:text-slate-500">
             INPC → inflación anual · CETES 28d → rendimiento de referencia.
             <br />
-            Caché de 6 horas. Fuente: Banxico SIE API.
+            Caché de 30 días. Fuente: Banxico SIE API.
           </p>
         </div>
       )}
