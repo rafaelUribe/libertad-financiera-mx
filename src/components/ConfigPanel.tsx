@@ -130,44 +130,45 @@ export function ConfigPanel({
         <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Escenarios de ahorro mensual</h2>
         <div className="space-y-4">
           {scenarios.map((scenario) => {
-            const isBalance = scenario.id === 'balance'
+            const isReadOnly = scenario.id.startsWith('balance_') || scenario.id === 'inercia'
             return (
               <div key={scenario.id}>
-                {isBalance ? (
-                  <div>
-                    <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
-                      <span className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: scenario.color }} />
-                        {scenario.nombre}
-                      </span>
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                        Calculado de Nómina
-                      </span>
+                {isReadOnly ? (
+                  <div className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
+                    <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: scenario.color }} />
+                      {scenario.nombre}
                     </span>
-                    <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800/60">
-                      <span className="flex-1 text-sm font-semibold tabular-nums text-slate-900 dark:text-white font-mono">
+                    <div className="text-right">
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 tabular-nums font-mono">
                         {formatCurrency(scenario.aportacionMensual)}
                       </span>
-                      <span className="text-xs text-slate-400">/mes</span>
+                      {ingresoNetoMensual > 0 && (
+                        <span className="block text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">
+                          {formatPercent(scenario.aportacionMensual / ingresoNetoMensual)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <NumberField
-                    label={
-                      <span className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: scenario.color }} />
-                        {scenario.nombre}
-                      </span>
-                    }
-                    value={scenario.aportacionMensual}
-                    onChange={(v) => patchScenario(scenario.id, v)}
-                    suffix="MXN/mes"
-                  />
-                )}
-                {ingresoNetoMensual > 0 && (
-                  <p className="mt-1 pl-1 text-[10px] text-slate-400 dark:text-slate-500">
-                    {formatPercent(scenario.aportacionMensual / ingresoNetoMensual)} de tu ingreso neto (según Nómina)
-                  </p>
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
+                    <NumberField
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: scenario.color }} />
+                          {scenario.nombre}
+                        </span>
+                      }
+                      value={scenario.aportacionMensual}
+                      onChange={(v) => patchScenario(scenario.id, v)}
+                      suffix="MXN/mes"
+                    />
+                    {ingresoNetoMensual > 0 && (
+                      <p className="mt-1 pl-1 text-[10px] text-slate-400 dark:text-slate-500">
+                        {formatPercent(scenario.aportacionMensual / ingresoNetoMensual)} de tu ingreso neto (según Nómina)
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )

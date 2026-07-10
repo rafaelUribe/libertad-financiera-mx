@@ -83,12 +83,43 @@ function App() {
   }, [scenarios])
 
   const computedScenarios = useMemo(() => {
+    const B = Math.max(0, payrollResult.balanceMensualDisponible)
     return [
       {
-        id: 'balance',
-        nombre: 'Ahorro Real (Balance)',
-        aportacionMensual: Math.max(0, payrollResult.balanceMensualDisponible),
+        id: 'balance_100',
+        nombre: 'Ahorro Real (100%)',
+        aportacionMensual: B,
+        color: '#7c3aed',
+      },
+      {
+        id: 'balance_80',
+        nombre: 'Ahorro 80%',
+        aportacionMensual: Math.round(B * 0.8),
         color: '#8b5cf6',
+      },
+      {
+        id: 'balance_60',
+        nombre: 'Ahorro 60%',
+        aportacionMensual: Math.round(B * 0.6),
+        color: '#6366f1',
+      },
+      {
+        id: 'balance_40',
+        nombre: 'Ahorro 40%',
+        aportacionMensual: Math.round(B * 0.4),
+        color: '#0ea5e9',
+      },
+      {
+        id: 'balance_20',
+        nombre: 'Ahorro 20%',
+        aportacionMensual: Math.round(B * 0.2),
+        color: '#38bdf8',
+      },
+      {
+        id: 'inercia',
+        nombre: 'Inercia (0%)',
+        aportacionMensual: 0,
+        color: '#64748b',
       },
       customScenarioFromState,
     ]
