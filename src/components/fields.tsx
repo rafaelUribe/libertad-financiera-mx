@@ -36,6 +36,38 @@ export function DateField({
   )
 }
 
+export function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  helper,
+}: {
+  label?: ReactNode
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  helper?: string
+}) {
+  return (
+    <label className="block">
+      {label && (
+        <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+          {label}
+          {helper && <span className="text-[10px] text-slate-400 dark:text-slate-500">{helper}</span>}
+        </span>
+      )}
+      <input
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputBaseClass}
+      />
+    </label>
+  )
+}
+
 export function NumberField({
   label,
   value,

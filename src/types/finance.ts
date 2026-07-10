@@ -1,3 +1,6 @@
+import type { PayrollConfig } from './payroll'
+import type { FixedTermDeposit, Loan, Property } from './assets'
+
 export interface MacroConfig {
   /** Fecha de nacimiento del usuario ("yyyy-mm-dd"); la edad actual se deriva de esta fecha */
   fechaNacimiento: string
@@ -83,6 +86,10 @@ export interface StorageState {
   macro: MacroConfig
   scenarios: Scenario[]
   cutoffScenario: CutoffScenario
+  payroll: PayrollConfig
+  properties: Property[]
+  loans: Loan[]
+  deposits: FixedTermDeposit[]
 }
 
 export interface FirebaseCredentials {

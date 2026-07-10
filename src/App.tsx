@@ -4,13 +4,26 @@ import { ConfigPanel } from './components/ConfigPanel'
 import { KpiCards } from './components/KpiCards'
 import { ProjectionChart } from './components/ProjectionChart'
 import { CutoffScenarioView } from './components/CutoffScenarioView'
+import { NominaView } from './components/NominaView'
+import { PatrimonioView } from './components/PatrimonioView'
+import { BalanceGeneralView } from './components/BalanceGeneralView'
 import { SyncModal } from './components/SyncModal'
 import { useFinancialCalculations } from './hooks/useFinancialCalculations'
 import { useFinancialStorage } from './hooks/useFinancialStorage'
+import { usePayrollCalculations } from './hooks/usePayrollCalculations'
+import { useAssetsCalculations } from './hooks/useAssetsCalculations'
 import { useDarkMode } from './hooks/useDarkMode'
 import { buildExportPayload } from './lib/exportData'
 
-type Tab = 'escenarios' | 'corte'
+type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'escenarios', label: 'Escenarios de ahorro' },
+  { id: 'corte', label: '¿Y si dejo de aportar?' },
+  { id: 'nomina', label: 'Nómina' },
+  { id: 'patrimonio', label: 'Patrimonio' },
+  { id: 'balance', label: 'Balance general' },
+]
 
 function App() {
   const { isDark, toggle } = useDarkMode()
@@ -21,6 +34,14 @@ function App() {
     setScenarios,
     cutoffScenario,
     setCutoffScenario,
+    payroll,
+    setPayroll,
+    properties,
+    setProperties,
+    loans,
+    setLoans,
+    deposits,
+    setDeposits,
     syncStatus,
     syncError,
     persistenceConfig,
@@ -29,14 +50,16 @@ function App() {
 
   const summary = useFinancialCalculations(macro, scenarios, cutoffScenario)
   const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
+  const payrollResult = usePayrollCalculations(payroll)
+  const assets = useAssetsCalculations(properties, loans, deposits)
 
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [tab, setTab] = useState<Tab>('escenarios')
 
   const exportPayload = useMemo(
-    () => buildExportPayload(macro, cutoffScenario, summary),
-    [macro, cutoffScenario, summary],
+    () => buildExportPayload(macro, cutoffScenario, summary, payroll, payrollResult, assets),
+    [macro, cutoffScenario, summary, payroll, payrollResult, assets],
   )
 
   return (
@@ -65,37 +88,31 @@ function App() {
         </aside>
 
         <div className="min-w-0 space-y-6">
-          <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800 sm:w-fit">
-            <button
-              type="button"
-              onClick={() => setTab('escenarios')}
-              className={`rounded-md px-4 py-1.5 text-xs font-medium transition ${
-                tab === 'escenarios'
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
-            >
-              Escenarios de ahorro
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab('corte')}
-              className={`rounded-md px-4 py-1.5 text-xs font-medium transition ${
-                tab === 'corte'
-                  ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
-                  : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
-            >
-              ¿Y si dejo de aportar?
-            </button>
+          <div className="flex gap-1 overflow-x-auto rounded-lg bg-slate-100 p-1 dark:bg-slate-800 sm:w-fit">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`shrink-0 rounded-md px-4 py-1.5 text-xs font-medium transition ${
+                  tab === t.id
+                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white'
+                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {tab === 'escenarios' ? (
+          {tab === 'escenarios' && (
             <>
               <KpiCards resultados={resultados} />
               <ProjectionChart resultados={resultados} capitalObjetivo={capitalObjetivo} />
             </>
-          ) : (
+          )}
+
+          {tab === 'corte' && (
             <CutoffScenarioView
               macro={macro}
               cutoffScenario={cutoffScenario}
@@ -104,6 +121,22 @@ function App() {
               capitalObjetivo={capitalObjetivo}
             />
           )}
+
+          {tab === 'nomina' && <NominaView payroll={payroll} onPayrollChange={setPayroll} result={payrollResult} />}
+
+          {tab === 'patrimonio' && (
+            <PatrimonioView
+              properties={properties}
+              onPropertiesChange={setProperties}
+              loans={loans}
+              onLoansChange={setLoans}
+              deposits={deposits}
+              onDepositsChange={setDeposits}
+              assets={assets}
+            />
+          )}
+
+          {tab === 'balance' && <BalanceGeneralView macro={macro} payrollResult={payrollResult} assets={assets} />}
         </div>
       </main>
 
