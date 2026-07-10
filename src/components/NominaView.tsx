@@ -1,13 +1,15 @@
 import { Banknote, Gift, PiggyBank, Scale } from 'lucide-react'
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import { formatCurrency, formatPercent } from '../lib/formatters'
-import { NumberField, TextField } from './fields'
+import { NumberField } from './fields'
+import { ExpensesEditor } from './ExpensesEditor'
 
 interface NominaViewProps {
   payroll: PayrollConfig
   onPayrollChange: (payroll: PayrollConfig) => void
   result: PayrollResult
   taxYear: number
+  inflacionAnual: number
 }
 
 function KpiTile({
@@ -50,18 +52,8 @@ function ConceptoFiscal({ nombre, bruto, exento, gravable }: { nombre: string; b
   )
 }
 
-export function NominaView({ payroll, onPayrollChange, result, taxYear }: NominaViewProps) {
+export function NominaView({ payroll, onPayrollChange, result, taxYear, inflacionAnual }: NominaViewProps) {
   const patch = (p: Partial<PayrollConfig>) => onPayrollChange({ ...payroll, ...p })
-
-  const patchGasto = (id: string, montoMensual: number) => {
-    patch({ gastos: payroll.gastos.map((g) => (g.id === id ? { ...g, montoMensual } : g)) })
-  }
-  const patchGastoNombre = (id: string, nombre: string) => {
-    patch({ gastos: payroll.gastos.map((g) => (g.id === id ? { ...g, nombre } : g)) })
-  }
-  const removeGasto = (id: string) => patch({ gastos: payroll.gastos.filter((g) => g.id !== id) })
-  const addGasto = () =>
-    patch({ gastos: [...payroll.gastos, { id: `gasto-${Date.now()}`, nombre: 'Nuevo rubro', montoMensual: 0 }] })
 
   return (
     <div className="space-y-6">
@@ -189,47 +181,11 @@ export function NominaView({ payroll, onPayrollChange, result, taxYear }: Nomina
             </p>
           </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Gastos mensuales por rubro</h2>
-              <button
-                type="button"
-                onClick={addGasto}
-                className="text-xs font-medium text-violet-600 hover:underline dark:text-violet-400"
-              >
-                + Agregar rubro
-              </button>
-            </div>
-            <div className="space-y-3">
-              {payroll.gastos.map((gasto) => (
-                <div key={gasto.id} className="flex items-end gap-2">
-                  <div className="flex-1">
-                    <TextField value={gasto.nombre} onChange={(v) => patchGastoNombre(gasto.id, v)} />
-                  </div>
-                  <div className="w-36">
-                    <NumberField
-                      label=""
-                      value={gasto.montoMensual}
-                      onChange={(v) => patchGasto(gasto.id, v)}
-                      suffix="MXN"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeGasto(gasto.id)}
-                    className="mb-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10"
-                    aria-label="Eliminar rubro"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-sm dark:border-slate-800">
-              <span className="font-medium text-slate-600 dark:text-slate-300">Total gastos</span>
-              <span className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.gastosMensualesTotal)}</span>
-            </div>
-          </section>
+          <ExpensesEditor
+            items={payroll.gastos}
+            onItemsChange={(gastos) => patch({ gastos })}
+            inflacionAnual={inflacionAnual}
+          />
 
           <section className="rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm dark:border-violet-500/30 dark:bg-violet-500/10">
             <div className="flex items-center justify-between">

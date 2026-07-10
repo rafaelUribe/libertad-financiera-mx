@@ -1,6 +1,7 @@
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import type { TaxConfig } from '../types/tax'
 import { calcularISRTarifa } from './isr'
+import { calcularGastosMensualesTotal } from './expenses'
 
 const DIAS_ANIO = 365
 const EXENCION_AGUINALDO_UMAS = 30
@@ -18,7 +19,7 @@ const EXENCION_PTU_UMAS = 15
  * legales típicos); la retención de aguinaldo/prima/PTU se reconcilia junto
  * con el sueldo en el cálculo anual, no de forma independiente por concepto.
  */
-export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): PayrollResult {
+export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig, inflacionAnual: number): PayrollResult {
   const sueldoBrutoAnual = config.sueldoBrutoMensual * 12
   const sueldoDiario = sueldoBrutoAnual / DIAS_ANIO
 
@@ -61,7 +62,7 @@ export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): Pay
     fondoAhorroProyeccionUnAnio = fondoAhorroProyeccionUnAnio * (1 + rMensualFondo) + fondoAhorroAportacionMensualTotal
   }
 
-  const gastosMensualesTotal = config.gastos.reduce((sum, g) => sum + g.montoMensual, 0)
+  const gastosMensualesTotal = calcularGastosMensualesTotal(config.gastos, inflacionAnual)
   const balanceMensualDisponible = ingresoNetoMensualPromedio - gastosMensualesTotal
 
   return {

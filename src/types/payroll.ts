@@ -1,8 +1,4 @@
-export interface ExpenseCategory {
-  id: string
-  nombre: string
-  montoMensual: number
-}
+import type { ExpenseItem } from './expenses'
 
 export interface PayrollConfig {
   sueldoBrutoMensual: number
@@ -15,7 +11,7 @@ export interface PayrollConfig {
   fondoAhorroPorcentajeTrabajador: number
   fondoAhorroPorcentajeEmpresa: number
   fondoAhorroRendimientoAnual: number
-  gastos: ExpenseCategory[]
+  gastos: ExpenseItem[]
 }
 
 export interface PayrollResult {

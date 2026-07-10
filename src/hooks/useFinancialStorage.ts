@@ -7,7 +7,18 @@ import { createStorageProvider } from '../services/storage/createStorageProvider
 import type { CutoffScenario, MacroConfig, PersistenceConfig, Scenario, StorageState, SyncStatus } from '../types/finance'
 import type { PayrollConfig } from '../types/payroll'
 import type { FixedTermDeposit, Loan, Property } from '../types/assets'
+import type { ExpenseItem } from '../types/expenses'
 import type { TaxConfig } from '../types/tax'
+
+/** Migra gastos guardados antes del modelo de items planos/depreciables (que solo tenían id/nombre/montoMensual). */
+function migrateExpenseItems(gastos: unknown): ExpenseItem[] {
+  if (!Array.isArray(gastos)) return DEFAULT_PAYROLL_CONFIG.gastos
+  return gastos.map((g) => {
+    if (g && typeof g === 'object' && 'kind' in g) return g as ExpenseItem
+    const legacy = g as { id: string; nombre: string; montoMensual: number }
+    return { kind: 'flat', id: legacy.id, categoria: 'Gastos fijos', nombre: legacy.nombre, montoMensual: legacy.montoMensual }
+  })
+}
 
 const DEFAULT_PERSISTENCE_CONFIG: PersistenceConfig = { provider: 'localStorage' }
 const SAVE_DEBOUNCE_MS = 600
@@ -27,7 +38,11 @@ function withDefaults(fallback: Partial<StorageState> | null): StorageState {
     macro: { ...DEFAULT_MACRO_CONFIG, ...fallback?.macro },
     scenarios: fallback?.scenarios ?? DEFAULT_SCENARIOS,
     cutoffScenario: { ...DEFAULT_CUTOFF_SCENARIO, ...fallback?.cutoffScenario },
-    payroll: { ...DEFAULT_PAYROLL_CONFIG, ...fallback?.payroll },
+    payroll: {
+      ...DEFAULT_PAYROLL_CONFIG,
+      ...fallback?.payroll,
+      gastos: migrateExpenseItems(fallback?.payroll?.gastos),
+    },
     properties: fallback?.properties ?? DEFAULT_PROPERTIES,
     // Migración: préstamos guardados antes de existir la retención fintech reciben el 20% típico.
     loans: (fallback?.loans ?? DEFAULT_LOANS).map((l) => ({ ...l, retencionIsrPorcentaje: l.retencionIsrPorcentaje ?? 0.2 })),

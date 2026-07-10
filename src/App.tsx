@@ -55,7 +55,7 @@ function App() {
 
   const summary = useFinancialCalculations(macro, scenarios, cutoffScenario)
   const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
-  const payrollResult = usePayrollCalculations(payroll, taxConfig)
+  const payrollResult = usePayrollCalculations(payroll, taxConfig, macro.inflacionAnual)
   const assets = useAssetsCalculations(properties, loans, deposits, taxConfig.tablaResico)
 
   const [syncModalOpen, setSyncModalOpen] = useState(false)
@@ -136,7 +136,13 @@ function App() {
           )}
 
           {tab === 'nomina' && (
-            <NominaView payroll={payroll} onPayrollChange={setPayroll} result={payrollResult} taxYear={taxConfig.year} />
+            <NominaView
+              payroll={payroll}
+              onPayrollChange={setPayroll}
+              result={payrollResult}
+              taxYear={taxConfig.year}
+              inflacionAnual={macro.inflacionAnual}
+            />
           )}
 
           {tab === 'patrimonio' && (

@@ -3,6 +3,7 @@ import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import type { useAssetsCalculations } from '../hooks/useAssetsCalculations'
 import type { TaxConfig } from '../types/tax'
 import { toDateInputValue } from './date'
+import { agruparPorCategoria, calcularCostoMensualItem } from './expenses'
 
 /**
  * Construye un JSON autodescriptivo con todos los parámetros y resultados
@@ -90,7 +91,24 @@ export function buildExportPayload(
       fondoAhorroAportacionMensualTotalMXN: Math.round(payrollResult.fondoAhorroAportacionMensualTotal),
       fondoAhorroProyeccionUnAnioMXN: Math.round(payrollResult.fondoAhorroProyeccionUnAnio),
       gastosMensualesTotalMXN: Math.round(payrollResult.gastosMensualesTotal),
-      gastosPorRubro: payroll.gastos.map((g) => ({ rubro: g.nombre, montoMensualMXN: g.montoMensual })),
+      gastosPorRubro: agruparPorCategoria(payroll.gastos, macro.inflacionAnual).map((grupo) => ({
+        rubro: grupo.categoria,
+        totalMensualMXN: Math.round(grupo.totalMensual),
+        items: grupo.items.map((item) =>
+          item.kind === 'flat'
+            ? { nombre: item.nombre, tipo: 'gasto fijo', montoMensualMXN: item.montoMensual }
+            : {
+                nombre: item.nombre,
+                tipo: 'activo depreciable',
+                valorAdquisicionMXN: item.valorAdquisicion,
+                vidaUtilMeses: item.vidaUtilMeses,
+                valorRecuperacionMXN: item.valorRecuperacion,
+                ajustarPorInflacion: item.ajustarPorInflacion,
+                gastosOperativosMensualesMXN: item.gastosOperativosMensuales,
+                costoMensualMXN: Math.round(calcularCostoMensualItem(item, macro.inflacionAnual)),
+              },
+        ),
+      })),
       balanceMensualDisponibleMXN: Math.round(payrollResult.balanceMensualDisponible),
     },
     patrimonio: {
