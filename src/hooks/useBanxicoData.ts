@@ -3,7 +3,7 @@ import type { BanxicoData } from '../types/banxico'
 import { getBanxicoData } from '../services/banxico'
 
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000 // 30 días: el INPC se publica mensualmente
-const STORAGE_KEY = 'finanzas-personales:banxico-cache'
+const STORAGE_KEY = 'finanzas-personales:banxico-cache-v2'
 
 interface CacheEntry {
   data: BanxicoData
