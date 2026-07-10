@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState, type ChangeEvent } from 'react'
 import { Trash2 } from 'lucide-react'
 import type { DepreciableExpenseItem, ExpenseItem, FlatExpenseItem } from '../types/expenses'
 import { agruparPorCategoria, calcularCostoMensualItem, calcularDepreciacionMensual, calcularGastosMensualesTotal } from '../lib/expenses'
@@ -27,6 +27,52 @@ function RemoveButton({ onRemove }: { onRemove: () => void }) {
   )
 }
 
+/** Input numérico sin label wrapper para uso inline en filas */
+function AmountInput({
+  value,
+  onChange,
+  suffix,
+}: {
+  value: number
+  onChange: (v: number) => void
+  suffix?: string
+}) {
+  const [text, setText] = useState(String(value))
+
+  useEffect(() => {
+    setText((cur) => (Number(cur) === value ? cur : String(value)))
+  }, [value])
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    setText(raw)
+    const parsed = Number(raw)
+    if (raw.trim() !== '' && !Number.isNaN(parsed)) onChange(parsed)
+  }
+
+  const handleBlur = () => {
+    if (text.trim() === '' || Number.isNaN(Number(text))) setText(String(value))
+  }
+
+  return (
+    <div className="relative w-32 shrink-0">
+      <input
+        type="text"
+        inputMode="decimal"
+        value={text}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        className={`${smallInputClass} pr-9 tabular-nums`}
+      />
+      {suffix && (
+        <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">
+          {suffix}
+        </span>
+      )}
+    </div>
+  )
+}
+
 function FlatItemRow({
   item,
   onChange,
@@ -38,21 +84,15 @@ function FlatItemRow({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <input
-        value={item.categoria}
-        onChange={(e) => onChange({ categoria: e.target.value })}
-        placeholder="Rubro"
-        className={`${smallInputClass} w-28 shrink-0`}
-      />
+      {/* nombre del gasto — ocupa el espacio disponible */}
       <input
         value={item.nombre}
         onChange={(e) => onChange({ nombre: e.target.value })}
-        placeholder="Nombre"
-        className={`${smallInputClass} flex-1`}
+        placeholder="Nombre del gasto"
+        className={`${smallInputClass} min-w-0 flex-1`}
       />
-      <div className="relative w-32 shrink-0">
-        <NumberField label="" value={item.montoMensual} onChange={(v) => onChange({ montoMensual: v })} suffix="MXN" />
-      </div>
+      {/* monto mensual — ancho fijo */}
+      <AmountInput value={item.montoMensual} onChange={(v) => onChange({ montoMensual: v })} suffix="MXN" />
       <RemoveButton onRemove={onRemove} />
     </div>
   )
