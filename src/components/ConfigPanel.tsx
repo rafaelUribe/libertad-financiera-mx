@@ -110,12 +110,17 @@ export function ConfigPanel({
             suffix="MXN"
             helper="Pesos de hoy"
           />
-          <NumberField
-            label="Tasa de retiro segura (SWR)"
-            value={Math.round(macro.tasaRetiroSeguro * 1000) / 10}
-            onChange={(v) => patchMacro({ tasaRetiroSeguro: v / 100 })}
-            suffix="%"
-          />
+          <div>
+            <span className="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
+              Tasa de retiro segura (SWR)
+            </span>
+            <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <span className="flex-1 text-sm font-semibold tabular-nums text-slate-900 dark:text-white font-mono">
+                {formatPercent(macro.tasaRetiroSeguro)}
+              </span>
+              <span className="text-xs text-slate-400">Ponderada</span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-5 rounded-xl bg-violet-50 p-3 text-center dark:bg-violet-500/10">

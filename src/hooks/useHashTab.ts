@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-export type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
+export type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance' | 'gastos'
 
-const VALID_TABS: Tab[] = ['escenarios', 'corte', 'nomina', 'patrimonio', 'balance']
+const VALID_TABS: Tab[] = ['escenarios', 'corte', 'nomina', 'patrimonio', 'balance', 'gastos']
 const DEFAULT_TAB: Tab = 'escenarios'
 
 function parseHash(): Tab {

@@ -2,14 +2,12 @@ import { Banknote, Gift, PiggyBank, Scale } from 'lucide-react'
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import { formatCurrency, formatPercent } from '../lib/formatters'
 import { NumberField } from './fields'
-import { ExpensesEditor } from './ExpensesEditor'
 
 interface NominaViewProps {
   payroll: PayrollConfig
   onPayrollChange: (payroll: PayrollConfig) => void
   result: PayrollResult
   taxYear: number
-  inflacionAnual: number
 }
 
 function KpiTile({
@@ -52,7 +50,7 @@ function ConceptoFiscal({ nombre, bruto, exento, gravable }: { nombre: string; b
   )
 }
 
-export function NominaView({ payroll, onPayrollChange, result, taxYear, inflacionAnual }: NominaViewProps) {
+export function NominaView({ payroll, onPayrollChange, result, taxYear }: NominaViewProps) {
   const patch = (p: Partial<PayrollConfig>) => onPayrollChange({ ...payroll, ...p })
 
   return (
@@ -180,12 +178,6 @@ export function NominaView({ payroll, onPayrollChange, result, taxYear, inflacio
               Vales de despensa: {formatCurrency(result.valesDespensaAnual)}/año, 100% exento.
             </p>
           </section>
-
-          <ExpensesEditor
-            items={payroll.gastos}
-            onItemsChange={(gastos) => patch({ gastos })}
-            inflacionAnual={inflacionAnual}
-          />
 
           <section className="rounded-2xl border border-violet-200 bg-violet-50 p-5 shadow-sm dark:border-violet-500/30 dark:bg-violet-500/10">
             <div className="flex items-center justify-between">

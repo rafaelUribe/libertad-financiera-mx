@@ -8,6 +8,7 @@ import { CutoffScenarioView } from './components/CutoffScenarioView'
 import { NominaView } from './components/NominaView'
 import { PatrimonioView } from './components/PatrimonioView'
 import { BalanceGeneralView } from './components/BalanceGeneralView'
+import { GastosView } from './components/GastosView'
 import { SyncModal } from './components/SyncModal'
 import { ConfigModal } from './components/ConfigModal'
 import { BanxicoWidget } from './components/BanxicoWidget'
@@ -26,6 +27,7 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'escenarios', label: 'Escenarios de ahorro' },
   { id: 'corte', label: '¿Y si dejo de aportar?' },
   { id: 'nomina', label: 'Nómina' },
+  { id: 'gastos', label: 'Gastos' },
   { id: 'patrimonio', label: 'Patrimonio' },
   { id: 'balance', label: 'Balance general' },
 ]
@@ -65,6 +67,7 @@ function App() {
       ...macro,
       capitalInicial: assets.patrimonioTotalActivos,
       rendimientoNominal: hasAssets ? assets.rendimientoPonderadoAnual : macro.rendimientoNominal,
+      tasaRetiroSeguro: hasAssets ? assets.rendimientoPonderadoAnual : macro.tasaRetiroSeguro,
     }
   }, [macro, assets.patrimonioTotalActivos, assets.rendimientoPonderadoAnual])
 
@@ -254,7 +257,15 @@ function App() {
                 onPayrollChange={setPayroll}
                 result={payrollResult}
                 taxYear={taxConfig.year}
+              />
+            )}
+
+            {tab === 'gastos' && (
+              <GastosView
+                items={payroll.gastos}
+                onItemsChange={(gastos) => setPayroll({ ...payroll, gastos })}
                 inflacionAnual={macroConCapitalPatrimonio.inflacionAnual}
+                ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
               />
             )}
 
