@@ -169,8 +169,20 @@ export function ConfigPanel({
                       suffix="MXN/mes"
                     />
                     {ingresoNetoMensual > 0 && (
-                      <p className="mt-1 pl-1 text-[10px] text-slate-400 dark:text-slate-500">
-                        {formatPercent(scenario.aportacionMensual / ingresoNetoMensual)} de tu ingreso neto (según Nómina)
+                      <p className="mt-1.5 pl-1 text-[10px] leading-relaxed text-slate-400 dark:text-slate-500">
+                        Equivale a <span className="font-semibold text-slate-600 dark:text-slate-300">{formatPercent(scenario.aportacionMensual / ingresoNetoMensual)}</span> de tu ingreso neto
+                        {(() => {
+                          const balanceReal = scenarios.find((s) => s.id === 'balance_100')?.aportacionMensual ?? 0
+                          if (balanceReal > 0) {
+                            return (
+                              <>
+                                {' o '}
+                                <span className="font-semibold text-slate-600 dark:text-slate-300">{formatPercent(scenario.aportacionMensual / balanceReal)}</span> de tu balance disponible
+                              </>
+                            )
+                          }
+                          return null
+                        })()}
                       </p>
                     )}
                   </div>
