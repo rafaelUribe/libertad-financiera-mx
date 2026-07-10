@@ -1,5 +1,6 @@
 import type { PayrollConfig } from './payroll'
 import type { FixedTermDeposit, Loan, Property } from './assets'
+import type { TaxConfig } from './tax'
 
 export interface MacroConfig {
   /** Fecha de nacimiento del usuario ("yyyy-mm-dd"); la edad actual se deriva de esta fecha */
@@ -90,6 +91,7 @@ export interface StorageState {
   properties: Property[]
   loans: Loan[]
   deposits: FixedTermDeposit[]
+  taxConfig: TaxConfig
 }
 
 export interface FirebaseCredentials {

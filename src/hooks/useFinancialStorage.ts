@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DEFAULT_CUTOFF_SCENARIO, DEFAULT_MACRO_CONFIG, DEFAULT_SCENARIOS, STORAGE_KEYS } from '../constants/finance'
 import { DEFAULT_PAYROLL_CONFIG } from '../constants/payroll'
 import { DEFAULT_DEPOSITS, DEFAULT_LOANS, DEFAULT_PROPERTIES } from '../constants/assets'
+import { DEFAULT_TAX_CONFIG } from '../constants/tax'
 import { createStorageProvider } from '../services/storage/createStorageProvider'
 import type { CutoffScenario, MacroConfig, PersistenceConfig, Scenario, StorageState, SyncStatus } from '../types/finance'
 import type { PayrollConfig } from '../types/payroll'
 import type { FixedTermDeposit, Loan, Property } from '../types/assets'
+import type { TaxConfig } from '../types/tax'
 
 const DEFAULT_PERSISTENCE_CONFIG: PersistenceConfig = { provider: 'localStorage' }
 const SAVE_DEBOUNCE_MS = 600
@@ -29,6 +31,7 @@ function withDefaults(fallback: Partial<StorageState> | null): StorageState {
     properties: fallback?.properties ?? DEFAULT_PROPERTIES,
     loans: fallback?.loans ?? DEFAULT_LOANS,
     deposits: fallback?.deposits ?? DEFAULT_DEPOSITS,
+    taxConfig: { ...DEFAULT_TAX_CONFIG, ...fallback?.taxConfig },
   }
 }
 
@@ -48,6 +51,7 @@ export function useFinancialStorage() {
   const [properties, setProperties] = useState<Property[]>(DEFAULT_PROPERTIES)
   const [loans, setLoans] = useState<Loan[]>(DEFAULT_LOANS)
   const [deposits, setDeposits] = useState<FixedTermDeposit[]>(DEFAULT_DEPOSITS)
+  const [taxConfig, setTaxConfig] = useState<TaxConfig>(DEFAULT_TAX_CONFIG)
   const [isLoaded, setIsLoaded] = useState(false)
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('local')
   const [syncError, setSyncError] = useState<string | null>(null)
@@ -56,8 +60,8 @@ export function useFinancialStorage() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const skipNextSaveRef = useRef(false)
 
-  const applyState = (state: StorageState) => {
-    skipNextSaveRef.current = true
+  const applyState = (state: StorageState, { skipSave = false }: { skipSave?: boolean } = {}) => {
+    if (skipSave) skipNextSaveRef.current = true
     setMacro(state.macro)
     setScenarios(state.scenarios)
     setCutoffScenario(state.cutoffScenario)
@@ -65,6 +69,7 @@ export function useFinancialStorage() {
     setProperties(state.properties)
     setLoans(state.loans)
     setDeposits(state.deposits)
+    setTaxConfig(state.taxConfig)
   }
 
   // Carga inicial (o recarga al cambiar de proveedor): intenta el proveedor
@@ -79,12 +84,12 @@ export function useFinancialStorage() {
       .load()
       .then((remote) => {
         if (cancelled) return
-        applyState(withDefaults(remote ?? readLocalCache()))
+        applyState(withDefaults(remote ?? readLocalCache()), { skipSave: true })
         setSyncStatus(provider.kind === 'localStorage' ? 'local' : provider.kind)
       })
       .catch((error: unknown) => {
         if (cancelled) return
-        applyState(withDefaults(readLocalCache()))
+        applyState(withDefaults(readLocalCache()), { skipSave: true })
         setSyncStatus('error')
         setSyncError(error instanceof Error ? error.message : 'Error al sincronizar')
       })
@@ -106,7 +111,7 @@ export function useFinancialStorage() {
       return
     }
 
-    const state: StorageState = { macro, scenarios, cutoffScenario, payroll, properties, loans, deposits }
+    const state: StorageState = { macro, scenarios, cutoffScenario, payroll, properties, loans, deposits, taxConfig }
     window.localStorage.setItem(STORAGE_KEYS.state, JSON.stringify(state))
 
     if (provider.kind === 'localStorage') {
@@ -130,11 +135,17 @@ export function useFinancialStorage() {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [macro, scenarios, cutoffScenario, payroll, properties, loans, deposits, provider, isLoaded])
+  }, [macro, scenarios, cutoffScenario, payroll, properties, loans, deposits, taxConfig, provider, isLoaded])
 
   const updatePersistenceConfig = useCallback((config: PersistenceConfig) => {
     window.localStorage.setItem(STORAGE_KEYS.persistenceConfig, JSON.stringify(config))
     setPersistenceConfig(config)
+  }, [])
+
+  /** Restaura todo el estado desde una configuración importada (JSON), guardándola de inmediato. */
+  const restoreState = useCallback((state: StorageState) => {
+    applyState(withDefaults(state))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return {
@@ -152,11 +163,14 @@ export function useFinancialStorage() {
     setLoans,
     deposits,
     setDeposits,
+    taxConfig,
+    setTaxConfig,
     isLoaded,
     syncStatus,
     syncError,
     persistenceConfig,
     updatePersistenceConfig,
+    restoreState,
   }
 }
 

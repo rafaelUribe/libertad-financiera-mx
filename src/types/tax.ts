@@ -13,3 +13,16 @@ export interface ResicoBracket {
   limiteSuperior: number
   tasa: number
 }
+
+/**
+ * Tablas fiscales editables por el usuario (se actualizan cada año por el SAT/INEGI).
+ * Viven en el estado persistido para poder corregirlas sin esperar una actualización de la app.
+ */
+export interface TaxConfig {
+  /** Año fiscal al que corresponden estas tablas, solo informativo */
+  year: number
+  umaDiario: number
+  tablaIsrMensual: TaxBracket[]
+  tablaIsrAnual: TaxBracket[]
+  tablaResico: ResicoBracket[]
+}

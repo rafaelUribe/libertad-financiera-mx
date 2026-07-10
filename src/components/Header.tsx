@@ -1,4 +1,4 @@
-import { Moon, Sun, Cloud, CloudOff, HardDrive, Loader2, Settings2 } from 'lucide-react'
+import { Moon, Sun, Cloud, CloudOff, Cog, HardDrive, Loader2, Settings2 } from 'lucide-react'
 import type { SyncStatus } from '../types/finance'
 import { ExportButton } from './ExportButton'
 
@@ -8,6 +8,7 @@ interface HeaderProps {
   syncStatus: SyncStatus
   onOpenSync: () => void
   onOpenConfig: () => void
+  onOpenAdvancedConfig: () => void
   exportData: unknown
 }
 
@@ -19,7 +20,15 @@ const STATUS_META: Record<SyncStatus, { label: string; icon: typeof Cloud; class
   error: { label: 'Error de sincronización', icon: CloudOff, className: 'text-rose-600 dark:text-rose-400' },
 }
 
-export function Header({ isDark, onToggleDark, syncStatus, onOpenSync, onOpenConfig, exportData }: HeaderProps) {
+export function Header({
+  isDark,
+  onToggleDark,
+  syncStatus,
+  onOpenSync,
+  onOpenConfig,
+  onOpenAdvancedConfig,
+  exportData,
+}: HeaderProps) {
   const status = STATUS_META[syncStatus]
   const StatusIcon = status.icon
 
@@ -66,6 +75,16 @@ export function Header({ isDark, onToggleDark, syncStatus, onOpenSync, onOpenCon
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
           >
             <Settings2 size={16} />
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenAdvancedConfig}
+            aria-label="Configuración avanzada"
+            title="Tablas fiscales y respaldo de configuración"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <Cog size={16} />
           </button>
 
           <button

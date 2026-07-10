@@ -1,54 +1,66 @@
-import type { ResicoBracket, TaxBracket } from '../types/tax'
+import type { ResicoBracket, TaxBracket, TaxConfig } from '../types/tax'
 
 /**
- * Tablas fiscales de referencia (México, SAT, ejercicio 2024). Se actualizan
- * cada año por inflación — verifica los valores vigentes antes de tomar
- * decisiones fiscales reales. Esta calculadora es una aproximación educativa,
- * no asesoría fiscal.
+ * Tablas fiscales de referencia (México, SAT/INEGI, ejercicio 2026 — Anexo 8
+ * de la RMF 2026, DOF 28/12/2025; UMA publicada por INEGI, vigente desde
+ * feb-2026). Se actualizan cada año por inflación: son el valor por defecto,
+ * pero quedan editables desde la app (botón "Configuración fiscal") y se
+ * pueden sobrescribir pegando un JSON, por si el SAT las vuelve a actualizar.
+ * Esta calculadora es una aproximación educativa, no asesoría fiscal.
  */
-export const TAX_TABLES_YEAR = 2024
+export const TAX_TABLES_YEAR = 2026
 
-/** UMA (Unidad de Medida y Actualización) diaria, usada para exenciones de aguinaldo/prima vacacional/PTU. */
-export const UMA_DIARIO = 108.57
+/** UMA (Unidad de Medida y Actualización) diaria 2026, usada para exenciones de aguinaldo/prima vacacional/PTU. */
+export const UMA_DIARIO = 117.31
 
-/** Tarifa mensual para retenciones de sueldos y salarios (Art. 96 LISR). */
+/** Tarifa mensual para retenciones de sueldos y salarios (Art. 96 LISR), derivada de la tarifa anual 2026. */
 export const TABLA_ISR_MENSUAL: TaxBracket[] = [
-  { limiteInferior: 0.01, limiteSuperior: 746.04, cuotaFija: 0, porcentajeExcedente: 0.0192 },
-  { limiteInferior: 746.05, limiteSuperior: 6332.05, cuotaFija: 14.32, porcentajeExcedente: 0.064 },
-  { limiteInferior: 6332.06, limiteSuperior: 11128.01, cuotaFija: 371.83, porcentajeExcedente: 0.1088 },
-  { limiteInferior: 11128.02, limiteSuperior: 12935.82, cuotaFija: 893.63, porcentajeExcedente: 0.16 },
-  { limiteInferior: 12935.83, limiteSuperior: 15487.71, cuotaFija: 1182.88, porcentajeExcedente: 0.1792 },
-  { limiteInferior: 15487.72, limiteSuperior: 31236.49, cuotaFija: 1640.18, porcentajeExcedente: 0.2136 },
-  { limiteInferior: 31236.5, limiteSuperior: 49233.0, cuotaFija: 5004.12, porcentajeExcedente: 0.2352 },
-  { limiteInferior: 49233.01, limiteSuperior: 93993.9, cuotaFija: 9236.89, porcentajeExcedente: 0.3 },
-  { limiteInferior: 93993.91, limiteSuperior: 125325.2, cuotaFija: 22665.17, porcentajeExcedente: 0.32 },
-  { limiteInferior: 125325.21, limiteSuperior: 375975.61, cuotaFija: 32691.18, porcentajeExcedente: 0.34 },
-  { limiteInferior: 375975.62, limiteSuperior: Infinity, cuotaFija: 117912.32, porcentajeExcedente: 0.35 },
+  { limiteInferior: 0.01, limiteSuperior: 844.59, cuotaFija: 0, porcentajeExcedente: 0.0192 },
+  { limiteInferior: 844.6, limiteSuperior: 7168.51, cuotaFija: 16.22, porcentajeExcedente: 0.064 },
+  { limiteInferior: 7168.52, limiteSuperior: 12598.02, cuotaFija: 420.95, porcentajeExcedente: 0.1088 },
+  { limiteInferior: 12598.03, limiteSuperior: 14644.64, cuotaFija: 1011.68, porcentajeExcedente: 0.16 },
+  { limiteInferior: 14644.65, limiteSuperior: 17533.64, cuotaFija: 1339.14, porcentajeExcedente: 0.1792 },
+  { limiteInferior: 17533.65, limiteSuperior: 35362.83, cuotaFija: 1856.85, porcentajeExcedente: 0.2136 },
+  { limiteInferior: 35362.84, limiteSuperior: 55736.68, cuotaFija: 5665.16, porcentajeExcedente: 0.2352 },
+  { limiteInferior: 55736.69, limiteSuperior: 106410.5, cuotaFija: 10457.09, porcentajeExcedente: 0.3 },
+  { limiteInferior: 106410.51, limiteSuperior: 141880.66, cuotaFija: 25659.23, porcentajeExcedente: 0.32 },
+  { limiteInferior: 141880.67, limiteSuperior: 425641.99, cuotaFija: 37009.69, porcentajeExcedente: 0.34 },
+  { limiteInferior: 425642.0, limiteSuperior: Infinity, cuotaFija: 133488.54, porcentajeExcedente: 0.35 },
 ]
 
-/** Tarifa anual (Art. 152 LISR), usada para la declaración anual / cálculo de ISR real sobre el ingreso gravable del año. */
+/** Tarifa anual (Art. 152 LISR) 2026, publicada en el Anexo 8 de la RMF 2026 (DOF 28/12/2025). */
 export const TABLA_ISR_ANUAL: TaxBracket[] = [
-  { limiteInferior: 0.01, limiteSuperior: 8952.49, cuotaFija: 0, porcentajeExcedente: 0.0192 },
-  { limiteInferior: 8952.5, limiteSuperior: 75984.55, cuotaFija: 171.88, porcentajeExcedente: 0.064 },
-  { limiteInferior: 75984.56, limiteSuperior: 133536.07, cuotaFija: 4461.94, porcentajeExcedente: 0.1088 },
-  { limiteInferior: 133536.08, limiteSuperior: 155229.8, cuotaFija: 10723.55, porcentajeExcedente: 0.16 },
-  { limiteInferior: 155229.81, limiteSuperior: 185852.57, cuotaFija: 14194.54, porcentajeExcedente: 0.1792 },
-  { limiteInferior: 185852.58, limiteSuperior: 374837.88, cuotaFija: 19682.13, porcentajeExcedente: 0.2136 },
-  { limiteInferior: 374837.89, limiteSuperior: 590795.99, cuotaFija: 60049.4, porcentajeExcedente: 0.2352 },
-  { limiteInferior: 590796.0, limiteSuperior: 1127926.84, cuotaFija: 110842.74, porcentajeExcedente: 0.3 },
-  { limiteInferior: 1127926.85, limiteSuperior: 1503902.46, cuotaFija: 271981.99, porcentajeExcedente: 0.32 },
-  { limiteInferior: 1503902.47, limiteSuperior: 4511707.37, cuotaFija: 392294.17, porcentajeExcedente: 0.34 },
-  { limiteInferior: 4511707.38, limiteSuperior: Infinity, cuotaFija: 1414947.85, porcentajeExcedente: 0.35 },
+  { limiteInferior: 0.01, limiteSuperior: 10135.11, cuotaFija: 0, porcentajeExcedente: 0.0192 },
+  { limiteInferior: 10135.12, limiteSuperior: 86022.11, cuotaFija: 194.59, porcentajeExcedente: 0.064 },
+  { limiteInferior: 86022.12, limiteSuperior: 151176.19, cuotaFija: 5051.37, porcentajeExcedente: 0.1088 },
+  { limiteInferior: 151176.2, limiteSuperior: 175735.66, cuotaFija: 12140.13, porcentajeExcedente: 0.16 },
+  { limiteInferior: 175735.67, limiteSuperior: 210403.69, cuotaFija: 16069.64, porcentajeExcedente: 0.1792 },
+  { limiteInferior: 210403.7, limiteSuperior: 424353.97, cuotaFija: 22282.14, porcentajeExcedente: 0.2136 },
+  { limiteInferior: 424353.98, limiteSuperior: 668840.14, cuotaFija: 67981.92, porcentajeExcedente: 0.2352 },
+  { limiteInferior: 668840.15, limiteSuperior: 1276925.98, cuotaFija: 125485.07, porcentajeExcedente: 0.3 },
+  { limiteInferior: 1276925.99, limiteSuperior: 1702567.97, cuotaFija: 307910.81, porcentajeExcedente: 0.32 },
+  { limiteInferior: 1702567.98, limiteSuperior: 5107703.92, cuotaFija: 444116.23, porcentajeExcedente: 0.34 },
+  { limiteInferior: 5107703.93, limiteSuperior: Infinity, cuotaFija: 1601862.46, porcentajeExcedente: 0.35 },
 ]
 
 /**
- * Tabla RESICO Personas Físicas (tasa única sobre el ingreso mensual, sin deducciones),
- * aplicable a ingresos por arrendamiento bajo este régimen.
+ * Tabla RESICO Personas Físicas 2026 (tasa única sobre el ingreso mensual
+ * efectivamente cobrado, sin deducciones). Los tramos no se ajustan por
+ * inflación (fijos en ley); el límite superior de $291,666.67 corresponde al
+ * tope anual de $3,500,000 entre 12 — por arriba de eso ya no se califica para RESICO.
  */
 export const TABLA_RESICO: ResicoBracket[] = [
   { limiteSuperior: 25000, tasa: 0.01 },
   { limiteSuperior: 50000, tasa: 0.011 },
   { limiteSuperior: 83333.33, tasa: 0.015 },
   { limiteSuperior: 208333.33, tasa: 0.02 },
-  { limiteSuperior: 3500000, tasa: 0.025 },
+  { limiteSuperior: 291666.67, tasa: 0.025 },
 ]
+
+export const DEFAULT_TAX_CONFIG: TaxConfig = {
+  year: TAX_TABLES_YEAR,
+  umaDiario: UMA_DIARIO,
+  tablaIsrMensual: TABLA_ISR_MENSUAL,
+  tablaIsrAnual: TABLA_ISR_ANUAL,
+  tablaResico: TABLA_RESICO,
+}

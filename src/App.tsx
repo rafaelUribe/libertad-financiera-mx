@@ -8,12 +8,14 @@ import { NominaView } from './components/NominaView'
 import { PatrimonioView } from './components/PatrimonioView'
 import { BalanceGeneralView } from './components/BalanceGeneralView'
 import { SyncModal } from './components/SyncModal'
+import { ConfigModal } from './components/ConfigModal'
 import { useFinancialCalculations } from './hooks/useFinancialCalculations'
 import { useFinancialStorage } from './hooks/useFinancialStorage'
 import { usePayrollCalculations } from './hooks/usePayrollCalculations'
 import { useAssetsCalculations } from './hooks/useAssetsCalculations'
 import { useDarkMode } from './hooks/useDarkMode'
 import { buildExportPayload } from './lib/exportData'
+import type { StorageState } from './types/finance'
 
 type Tab = 'escenarios' | 'corte' | 'nomina' | 'patrimonio' | 'balance'
 
@@ -42,24 +44,33 @@ function App() {
     setLoans,
     deposits,
     setDeposits,
+    taxConfig,
+    setTaxConfig,
     syncStatus,
     syncError,
     persistenceConfig,
     updatePersistenceConfig,
+    restoreState,
   } = useFinancialStorage()
 
   const summary = useFinancialCalculations(macro, scenarios, cutoffScenario)
   const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
-  const payrollResult = usePayrollCalculations(payroll)
-  const assets = useAssetsCalculations(properties, loans, deposits)
+  const payrollResult = usePayrollCalculations(payroll, taxConfig)
+  const assets = useAssetsCalculations(properties, loans, deposits, taxConfig.tablaResico)
 
   const [syncModalOpen, setSyncModalOpen] = useState(false)
+  const [advancedConfigOpen, setAdvancedConfigOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [tab, setTab] = useState<Tab>('escenarios')
 
   const exportPayload = useMemo(
-    () => buildExportPayload(macro, cutoffScenario, summary, payroll, payrollResult, assets),
-    [macro, cutoffScenario, summary, payroll, payrollResult, assets],
+    () => buildExportPayload(macro, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig),
+    [macro, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig],
+  )
+
+  const fullState: StorageState = useMemo(
+    () => ({ macro, scenarios, cutoffScenario, payroll, properties, loans, deposits, taxConfig }),
+    [macro, scenarios, cutoffScenario, payroll, properties, loans, deposits, taxConfig],
   )
 
   return (
@@ -70,6 +81,7 @@ function App() {
         syncStatus={syncStatus}
         onOpenSync={() => setSyncModalOpen(true)}
         onOpenConfig={() => setConfigOpen((v) => !v)}
+        onOpenAdvancedConfig={() => setAdvancedConfigOpen(true)}
         exportData={exportPayload}
       />
 
@@ -122,7 +134,9 @@ function App() {
             />
           )}
 
-          {tab === 'nomina' && <NominaView payroll={payroll} onPayrollChange={setPayroll} result={payrollResult} />}
+          {tab === 'nomina' && (
+            <NominaView payroll={payroll} onPayrollChange={setPayroll} result={payrollResult} taxYear={taxConfig.year} />
+          )}
 
           {tab === 'patrimonio' && (
             <PatrimonioView
@@ -147,6 +161,15 @@ function App() {
         onSave={updatePersistenceConfig}
         syncStatus={syncStatus}
         syncError={syncError}
+      />
+
+      <ConfigModal
+        open={advancedConfigOpen}
+        onClose={() => setAdvancedConfigOpen(false)}
+        taxConfig={taxConfig}
+        onTaxConfigChange={setTaxConfig}
+        fullState={fullState}
+        onRestoreState={restoreState}
       />
     </div>
   )

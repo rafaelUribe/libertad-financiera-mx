@@ -2,12 +2,12 @@ import { Banknote, Gift, PiggyBank, Scale } from 'lucide-react'
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import { formatCurrency, formatPercent } from '../lib/formatters'
 import { NumberField, TextField } from './fields'
-import { TAX_TABLES_YEAR } from '../constants/tax'
 
 interface NominaViewProps {
   payroll: PayrollConfig
   onPayrollChange: (payroll: PayrollConfig) => void
   result: PayrollResult
+  taxYear: number
 }
 
 function KpiTile({
@@ -50,7 +50,7 @@ function ConceptoFiscal({ nombre, bruto, exento, gravable }: { nombre: string; b
   )
 }
 
-export function NominaView({ payroll, onPayrollChange, result }: NominaViewProps) {
+export function NominaView({ payroll, onPayrollChange, result, taxYear }: NominaViewProps) {
   const patch = (p: Partial<PayrollConfig>) => onPayrollChange({ ...payroll, ...p })
 
   const patchGasto = (id: string, montoMensual: number) => {
@@ -66,7 +66,7 @@ export function NominaView({ payroll, onPayrollChange, result }: NominaViewProps
   return (
     <div className="space-y-6">
       <p className="rounded-xl bg-amber-50 px-4 py-2.5 text-[11px] leading-relaxed text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
-        Cálculo educativo con tarifas ISR oficiales {TAX_TABLES_YEAR} (SAT). No incluye subsidio al empleo; vales de
+        Cálculo educativo con tarifas ISR oficiales {taxYear} (SAT). No incluye subsidio al empleo; vales de
         despensa y fondo de ahorro se asumen exentos dentro de límites típicos. No sustituye asesoría fiscal.
       </p>
 

@@ -1,5 +1,5 @@
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
-import { TABLA_ISR_ANUAL, TABLA_ISR_MENSUAL, UMA_DIARIO } from '../constants/tax'
+import type { TaxConfig } from '../types/tax'
 import { calcularISRTarifa } from './isr'
 
 const DIAS_ANIO = 365
@@ -18,24 +18,24 @@ const EXENCION_PTU_UMAS = 15
  * legales típicos); la retención de aguinaldo/prima/PTU se reconcilia junto
  * con el sueldo en el cálculo anual, no de forma independiente por concepto.
  */
-export function calcularNomina(config: PayrollConfig): PayrollResult {
+export function calcularNomina(config: PayrollConfig, taxConfig: TaxConfig): PayrollResult {
   const sueldoBrutoAnual = config.sueldoBrutoMensual * 12
   const sueldoDiario = sueldoBrutoAnual / DIAS_ANIO
 
-  const isrMensualCalculado = calcularISRTarifa(config.sueldoBrutoMensual, TABLA_ISR_MENSUAL)
+  const isrMensualCalculado = calcularISRTarifa(config.sueldoBrutoMensual, taxConfig.tablaIsrMensual)
   const isrMensualRetenido = config.sueldoBrutoMensual * config.retencionIsrProvisionalPorcentaje
   const diferenciaMensual = isrMensualCalculado - isrMensualRetenido
   const sueldoNetoMensual = config.sueldoBrutoMensual - isrMensualRetenido
 
   const aguinaldoBruto = sueldoDiario * config.diasAguinaldo
-  const aguinaldoExento = Math.min(aguinaldoBruto, EXENCION_AGUINALDO_UMAS * UMA_DIARIO)
+  const aguinaldoExento = Math.min(aguinaldoBruto, EXENCION_AGUINALDO_UMAS * taxConfig.umaDiario)
   const aguinaldoGravable = Math.max(0, aguinaldoBruto - aguinaldoExento)
 
   const primaVacacionalBruta = sueldoDiario * config.diasVacaciones * config.primaVacacionalPorcentaje
-  const primaVacacionalExenta = Math.min(primaVacacionalBruta, EXENCION_PRIMA_VACACIONAL_UMAS * UMA_DIARIO)
+  const primaVacacionalExenta = Math.min(primaVacacionalBruta, EXENCION_PRIMA_VACACIONAL_UMAS * taxConfig.umaDiario)
   const primaVacacionalGravable = Math.max(0, primaVacacionalBruta - primaVacacionalExenta)
 
-  const utilidadesExentas = Math.min(config.utilidadesPromedioAnual, EXENCION_PTU_UMAS * UMA_DIARIO)
+  const utilidadesExentas = Math.min(config.utilidadesPromedioAnual, EXENCION_PTU_UMAS * taxConfig.umaDiario)
   const utilidadesGravables = Math.max(0, config.utilidadesPromedioAnual - utilidadesExentas)
 
   const valesDespensaAnual = config.valesDespensaMensual * 12
@@ -45,7 +45,7 @@ export function calcularNomina(config: PayrollConfig): PayrollResult {
 
   const ingresoAnualGravable = sueldoBrutoAnual + aguinaldoGravable + primaVacacionalGravable + utilidadesGravables
 
-  const isrAnualCalculado = calcularISRTarifa(ingresoAnualGravable, TABLA_ISR_ANUAL)
+  const isrAnualCalculado = calcularISRTarifa(ingresoAnualGravable, taxConfig.tablaIsrAnual)
   const isrAnualRetenidoEstimado = isrMensualRetenido * 12
   const saldoDeclaracionAnual = isrAnualCalculado - isrAnualRetenidoEstimado
 

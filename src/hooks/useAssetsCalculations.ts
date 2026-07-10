@@ -1,10 +1,16 @@
 import { useMemo } from 'react'
 import type { FixedTermDeposit, Loan, Property } from '../types/assets'
+import type { ResicoBracket } from '../types/tax'
 import { calcularRendimientoPagare, calcularRendimientoPrestamo, calcularRentabilidadPropiedad } from '../lib/assets'
 
-export function useAssetsCalculations(properties: Property[], loans: Loan[], deposits: FixedTermDeposit[]) {
+export function useAssetsCalculations(
+  properties: Property[],
+  loans: Loan[],
+  deposits: FixedTermDeposit[],
+  tablaResico: ResicoBracket[],
+) {
   return useMemo(() => {
-    const propiedades = properties.map(calcularRentabilidadPropiedad)
+    const propiedades = properties.map((p) => calcularRentabilidadPropiedad(p, tablaResico))
     const prestamos = loans.map(calcularRendimientoPrestamo)
     const pagares = deposits.map(calcularRendimientoPagare)
 
@@ -28,5 +34,5 @@ export function useAssetsCalculations(properties: Property[], loans: Loan[], dep
       patrimonioTotalActivos,
       ingresoPasivoMensualNeto,
     }
-  }, [properties, loans, deposits])
+  }, [properties, loans, deposits, tablaResico])
 }

@@ -1,8 +1,8 @@
 import type { FinancialSummary, MacroConfig, CutoffScenario } from '../types/finance'
 import type { PayrollConfig, PayrollResult } from '../types/payroll'
 import type { useAssetsCalculations } from '../hooks/useAssetsCalculations'
+import type { TaxConfig } from '../types/tax'
 import { toDateInputValue } from './date'
-import { TAX_TABLES_YEAR } from '../constants/tax'
 
 /**
  * Construye un JSON autodescriptivo con todos los parámetros y resultados
@@ -17,6 +17,7 @@ export function buildExportPayload(
   payroll: PayrollConfig,
   payrollResult: PayrollResult,
   assets: ReturnType<typeof useAssetsCalculations>,
+  taxConfig: TaxConfig,
 ) {
   const { edadActual, tasaRealAnual, capitalObjetivo, resultados, resultadoCorte } = summary
 
@@ -68,7 +69,7 @@ export function buildExportPayload(
       capitalProyectadoA60AniosMXN: Math.round(resultadoCorte.capitalFinal),
     },
     nomina: {
-      notaTablasFiscales: `Cálculo con tarifas ISR oficiales SAT ${TAX_TABLES_YEAR}; no incluye subsidio al empleo. Aproximación educativa, no asesoría fiscal.`,
+      notaTablasFiscales: `Cálculo con tarifas ISR oficiales SAT ${taxConfig.year}; no incluye subsidio al empleo. Aproximación educativa, no asesoría fiscal.`,
       sueldoBrutoMensualMXN: payrollResult.sueldoDiario * 365 / 12,
       isrMensualCalculadoMXN: Math.round(payrollResult.isrMensualCalculado),
       isrMensualRetenidoMXN: Math.round(payrollResult.isrMensualRetenido),

@@ -1,5 +1,5 @@
 import type { FixedTermDeposit, FixedTermDepositResult, Loan, LoanResult, Property, PropertyResult } from '../types/assets'
-import { TABLA_RESICO } from '../constants/tax'
+import type { ResicoBracket } from '../types/tax'
 import { calcularISRResico } from './isr'
 
 /**
@@ -7,10 +7,10 @@ import { calcularISRResico } from './isr'
  * (tasa única sobre el ingreso bruto mensual, sin deducciones permitidas),
  * y se combina con la plusvalía esperada para obtener el retorno total.
  */
-export function calcularRentabilidadPropiedad(property: Property): PropertyResult {
+export function calcularRentabilidadPropiedad(property: Property, tablaResico: ResicoBracket[]): PropertyResult {
   const rentaAnualBruta = property.rentaMensual * 12
   const gastosAnuales = property.gastosMensuales * 12
-  const isrResicoMensual = calcularISRResico(property.rentaMensual, TABLA_RESICO)
+  const isrResicoMensual = calcularISRResico(property.rentaMensual, tablaResico)
   const isrResicoAnual = isrResicoMensual * 12
   const rentaAnualNetaDespuesImpuesto = rentaAnualBruta - gastosAnuales - isrResicoAnual
   const plusvaliaAnualEstimadaMXN = property.valor * property.plusvaliaAnualEstimada
