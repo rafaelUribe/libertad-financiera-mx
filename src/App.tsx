@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Header } from './components/Header'
 import { ConfigPanel } from './components/ConfigPanel'
 import { KpiCards } from './components/KpiCards'
@@ -8,6 +8,7 @@ import { SyncModal } from './components/SyncModal'
 import { useFinancialCalculations } from './hooks/useFinancialCalculations'
 import { useFinancialStorage } from './hooks/useFinancialStorage'
 import { useDarkMode } from './hooks/useDarkMode'
+import { buildExportPayload } from './lib/exportData'
 
 type Tab = 'escenarios' | 'corte'
 
@@ -26,15 +27,17 @@ function App() {
     updatePersistenceConfig,
   } = useFinancialStorage()
 
-  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = useFinancialCalculations(
-    macro,
-    scenarios,
-    cutoffScenario,
-  )
+  const summary = useFinancialCalculations(macro, scenarios, cutoffScenario)
+  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
 
   const [syncModalOpen, setSyncModalOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [tab, setTab] = useState<Tab>('escenarios')
+
+  const exportPayload = useMemo(
+    () => buildExportPayload(macro, cutoffScenario, summary),
+    [macro, cutoffScenario, summary],
+  )
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -44,6 +47,7 @@ function App() {
         syncStatus={syncStatus}
         onOpenSync={() => setSyncModalOpen(true)}
         onOpenConfig={() => setConfigOpen((v) => !v)}
+        exportData={exportPayload}
       />
 
       <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[300px_1fr] lg:px-8 lg:py-8">

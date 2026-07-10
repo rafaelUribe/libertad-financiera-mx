@@ -1,5 +1,6 @@
 import { Moon, Sun, Cloud, CloudOff, HardDrive, Loader2, Settings2 } from 'lucide-react'
 import type { SyncStatus } from '../types/finance'
+import { ExportButton } from './ExportButton'
 
 interface HeaderProps {
   isDark: boolean
@@ -7,6 +8,7 @@ interface HeaderProps {
   syncStatus: SyncStatus
   onOpenSync: () => void
   onOpenConfig: () => void
+  exportData: unknown
 }
 
 const STATUS_META: Record<SyncStatus, { label: string; icon: typeof Cloud; className: string }> = {
@@ -17,7 +19,7 @@ const STATUS_META: Record<SyncStatus, { label: string; icon: typeof Cloud; class
   error: { label: 'Error de sincronización', icon: CloudOff, className: 'text-rose-600 dark:text-rose-400' },
 }
 
-export function Header({ isDark, onToggleDark, syncStatus, onOpenSync, onOpenConfig }: HeaderProps) {
+export function Header({ isDark, onToggleDark, syncStatus, onOpenSync, onOpenConfig, exportData }: HeaderProps) {
   const status = STATUS_META[syncStatus]
   const StatusIcon = status.icon
 
@@ -37,6 +39,8 @@ export function Header({ isDark, onToggleDark, syncStatus, onOpenSync, onOpenCon
         </div>
 
         <div className="flex items-center gap-2">
+          <ExportButton data={exportData} />
+
           <button
             type="button"
             onClick={onOpenSync}
