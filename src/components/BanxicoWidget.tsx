@@ -125,7 +125,7 @@ export function BanxicoWidget({ data, loading, error, onRefresh, onApplyValues, 
           {!error && (
             <div className="grid grid-cols-2 gap-2">
               <StatCard
-                label="Infl. no subyac."
+                label="Inflación general"
                 value={data?.inpc ?? null}
                 suffix="% anual"
                 icon={TrendingUp}

@@ -11,7 +11,7 @@
  */
 
 const BANXICO_BASE = 'https://www.banxico.org.mx/SieAPIRest/service/v1'
-const SERIES_IDS = 'SP74665,SF60634,SF43718,SF61745'
+const SERIES_IDS = 'SP30578,SF60634,SF43718,SF61745'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',

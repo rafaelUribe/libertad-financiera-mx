@@ -1,23 +1,22 @@
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Landmark, PiggyBank, TrendingUp, Wallet } from 'lucide-react'
 import type { PayrollResult } from '../types/payroll'
-import type { MacroConfig } from '../types/finance'
+
 import type { useAssetsCalculations } from '../hooks/useAssetsCalculations'
 import { formatCompactCurrency, formatCurrency } from '../lib/formatters'
 
 interface BalanceGeneralViewProps {
-  macro: MacroConfig
   payrollResult: PayrollResult
   assets: ReturnType<typeof useAssetsCalculations>
 }
 
-export function BalanceGeneralView({ macro, payrollResult, assets }: BalanceGeneralViewProps) {
+export function BalanceGeneralView({ payrollResult, assets }: BalanceGeneralViewProps) {
   const ingresoPropiedades = assets.propiedades.reduce((sum, r) => sum + r.rentaAnualNetaDespuesImpuesto, 0) / 12
   const ingresoPrestamos = assets.prestamos.reduce((sum, r) => sum + r.ingresoMensualNeto, 0)
   const ingresoPagares = assets.pagares.reduce((sum, r) => sum + r.rendimientoAnualNeto, 0) / 12
 
   const balanceGeneralMensual = payrollResult.balanceMensualDisponible + assets.ingresoPasivoMensualNeto
-  const patrimonioNetoTotal = macro.capitalInicial + assets.patrimonioTotalActivos
+  const patrimonioNetoTotal = assets.patrimonioTotalActivos
 
   const chartData = [
     { fuente: 'Nómina (neto)', valor: payrollResult.ingresoNetoMensualPromedio, color: '#7c3aed' },
@@ -90,12 +89,12 @@ export function BalanceGeneralView({ macro, payrollResult, assets }: BalanceGene
         <h2 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">Patrimonio neto total</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Capital de inversión</p>
-            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(macro.capitalInicial)}</p>
+            <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Propiedades</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(assets.valorTotalPropiedades)}</p>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Patrimonio en activos</p>
-            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(assets.patrimonioTotalActivos)}</p>
+            <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Préstamos y Pagarés</p>
+            <p className="text-base font-bold text-slate-900 dark:text-white">{formatCurrency(assets.montoTotalPrestamos + assets.montoTotalPagares)}</p>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-wide text-slate-400 dark:text-slate-500">Total</p>

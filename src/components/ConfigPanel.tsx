@@ -12,6 +12,7 @@ interface ConfigPanelProps {
   ingresoNetoMensual: number
   /** true si la inflación viene de Banxico (no del fallback) */
   inflacionDesdeBanxico: boolean
+  patrimonioTotalActivos: number
 }
 
 const HOY = new Date().toISOString().slice(0, 10)
@@ -25,6 +26,7 @@ export function ConfigPanel({
   edadActual,
   ingresoNetoMensual,
   inflacionDesdeBanxico,
+  patrimonioTotalActivos,
 }: ConfigPanelProps) {
   const patchMacro = (patch: Partial<MacroConfig>) => onMacroChange({ ...macro, ...patch })
 
@@ -44,12 +46,19 @@ export function ConfigPanel({
             helper={`Edad actual: ${formatAge(edadActual)}`}
             max={HOY}
           />
-          <NumberField
-            label="Capital inicial"
-            value={macro.capitalInicial}
-            onChange={(v) => patchMacro({ capitalInicial: v })}
-            suffix="MXN"
-          />
+          <div>
+            <span className="mb-1.5 flex items-baseline justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
+              Capital inicial
+              <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                Patrimonio calculado
+              </span>
+            </span>
+            <div className="flex h-9 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 dark:border-slate-700 dark:bg-slate-800/60">
+              <span className="flex-1 text-sm font-semibold tabular-nums text-slate-900 dark:text-white font-mono">
+                {formatCurrency(patrimonioTotalActivos)}
+              </span>
+            </div>
+          </div>
           <NumberField
             label="Rendimiento nominal anual"
             value={Math.round(macro.rendimientoNominal * 1000) / 10}

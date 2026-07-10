@@ -29,8 +29,8 @@ export interface BanxicoResponse {
 
 /** Series de interés para finanzas personales */
 export const BANXICO_SERIES = {
-  /** INPC General — inflación acumulada */
-  INPC: 'SP74665',
+  /** INPC General — variación anual */
+  INPC: 'SP30578',
   /** CETES 28 días */
   CETES_28: 'SF60634',
   /** TIIE 28 días (tasa de referencia interbancaria) */

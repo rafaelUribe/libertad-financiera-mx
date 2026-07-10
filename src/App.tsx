@@ -55,10 +55,19 @@ function App() {
     restoreState,
   } = useFinancialStorage()
 
-  const summary = useFinancialCalculations(macro, scenarios, cutoffScenario)
-  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
-  const payrollResult = usePayrollCalculations(payroll, taxConfig, macro.inflacionAnual)
   const assets = useAssetsCalculations(properties, loans, deposits, taxConfig.tablaResico)
+
+  // Derive/override capitalInicial from patrimonioTotalActivos
+  const macroConCapitalPatrimonio = useMemo(() => {
+    return {
+      ...macro,
+      capitalInicial: assets.patrimonioTotalActivos,
+    }
+  }, [macro, assets.patrimonioTotalActivos])
+
+  const summary = useFinancialCalculations(macroConCapitalPatrimonio, scenarios, cutoffScenario)
+  const { capitalObjetivo, resultados, edadActual, resultadoCorte } = summary
+  const payrollResult = usePayrollCalculations(payroll, taxConfig, macroConCapitalPatrimonio.inflacionAnual)
 
   const banxicoToken = persistenceConfig.banxicoToken ?? ''
   const { data: banxicoData, loading: banxicoLoading, error: banxicoError, refresh: banxicoRefresh } = useBanxicoData(banxicoToken)
@@ -95,8 +104,8 @@ function App() {
   const [tab, setTab] = useHashTab()
 
   const exportPayload = useMemo(
-    () => buildExportPayload(macro, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig),
-    [macro, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig],
+    () => buildExportPayload(macroConCapitalPatrimonio, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig),
+    [macroConCapitalPatrimonio, cutoffScenario, summary, payroll, payrollResult, assets, taxConfig],
   )
 
   const fullState: StorageState = useMemo(
@@ -131,7 +140,7 @@ function App() {
               }}
             />
             <ConfigPanel
-              macro={macro}
+              macro={macroConCapitalPatrimonio}
               onMacroChange={setMacro}
               scenarios={scenarios}
               onScenariosChange={setScenarios}
@@ -139,6 +148,7 @@ function App() {
               edadActual={edadActual}
               ingresoNetoMensual={payrollResult.ingresoNetoMensualPromedio}
               inflacionDesdeBanxico={inflacionDesdeBanxico.current}
+              patrimonioTotalActivos={assets.patrimonioTotalActivos}
             />
           </div>
         </aside>
@@ -184,7 +194,7 @@ function App() {
               onPayrollChange={setPayroll}
               result={payrollResult}
               taxYear={taxConfig.year}
-              inflacionAnual={macro.inflacionAnual}
+              inflacionAnual={macroConCapitalPatrimonio.inflacionAnual}
             />
           )}
 
@@ -200,7 +210,7 @@ function App() {
             />
           )}
 
-          {tab === 'balance' && <BalanceGeneralView macro={macro} payrollResult={payrollResult} assets={assets} />}
+          {tab === 'balance' && <BalanceGeneralView payrollResult={payrollResult} assets={assets} />}
         </div>
       </main>
 
